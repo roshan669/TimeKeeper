@@ -197,9 +197,8 @@ export const CounterProvider = ({
                   data: { counterId: id, notificationType: "exactTime" }, // Add type for identification
                 },
                 trigger: {
+                  type: Notifications.SchedulableTriggerInputTypes.DATE,
                   date: triggerDate,
-                  type: "date",
-                  repeats: false,
                 },
               });
             console.log(
@@ -239,9 +238,8 @@ export const CounterProvider = ({
                     sticky: true,
                   },
                   trigger: {
+                    type: Notifications.SchedulableTriggerInputTypes.DATE,
                     date: todayNotificationTime,
-                    type: "date",
-                    repeats: false,
                   },
                 });
               console.log(

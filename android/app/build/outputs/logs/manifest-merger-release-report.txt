@@ -11,6 +11,7 @@ MERGED from [:react-native-screens] C:\RNProjects\TimeKeeper\node_modules\react-
 MERGED from [:react-native-webview] C:\RNProjects\TimeKeeper\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-19:12
 MERGED from [:react-native-async-storage_async-storage] C:\RNProjects\TimeKeeper\node_modules\@react-native-async-storage\async-storage\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-community_datetimepicker] C:\RNProjects\TimeKeeper\node_modules\@react-native-community\datetimepicker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-9:12
+MERGED from [:react-native-date-picker] C:\RNProjects\TimeKeeper\node_modules\react-native-date-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-reanimated] C:\RNProjects\TimeKeeper\node_modules\react-native-reanimated\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:expo-application] C:\RNProjects\TimeKeeper\node_modules\expo-application\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:expo-asset] C:\RNProjects\TimeKeeper\node_modules\expo-asset\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-7:12
@@ -143,6 +144,7 @@ MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] C:\User
 MERGED from [androidx.print:print:1.0.0] C:\Users\dhami\.gradle\caches\8.10.2\transforms\48a1e2e2f91c042d9e9a81b07d1a07c9\transformed\print-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\dhami\.gradle\caches\8.10.2\transforms\08ed42ff4603117060e44e0aab292611\transformed\core-runtime-2.2.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.annotation:annotation-experimental:1.4.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\cd2ab677655180239ca5128f2807bd57\transformed\annotation-experimental-1.4.1\AndroidManifest.xml:2:1-7:12
+MERGED from [net.time4j:time4j-android:4.8-2021a] C:\Users\dhami\.gradle\caches\8.10.2\transforms\d589d1d26e3e9ffc08b891c5737ac828\transformed\time4j-android-4.8-2021a\AndroidManifest.xml:2:1-13:12
 MERGED from [com.facebook.fbjni:fbjni:0.6.0] C:\Users\dhami\.gradle\caches\8.10.2\transforms\ab403838776104c8b5f93471d162cb09\transformed\fbjni-0.6.0\AndroidManifest.xml:2:1-7:12
 MERGED from [com.facebook.soloader:soloader:0.12.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\298ba6f8628c1aca8b8363197a55bf8f\transformed\soloader-0.12.1\AndroidManifest.xml:2:1-17:12
 MERGED from [com.android.installreferrer:installreferrer:2.2] C:\Users\dhami\.gradle\caches\8.10.2\transforms\0fc32cf077dc2368bcd5cc296267ef97\transformed\installreferrer-2.2\AndroidManifest.xml:2:1-13:12
@@ -266,6 +268,8 @@ MERGED from [com.google.android.datatransport:transport-runtime:3.1.9] C:\Users\
 MERGED from [com.google.android.datatransport:transport-runtime:3.1.9] C:\Users\dhami\.gradle\caches\8.10.2\transforms\b4ecedc7ef72616a546f5769cbebc103\transformed\transport-runtime-3.1.9\AndroidManifest.xml:25:5-39:19
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\f6c523d40aec80bfb260449b96806f8d\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:24:5-25:19
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\f6c523d40aec80bfb260449b96806f8d\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:24:5-25:19
+MERGED from [net.time4j:time4j-android:4.8-2021a] C:\Users\dhami\.gradle\caches\8.10.2\transforms\d589d1d26e3e9ffc08b891c5737ac828\transformed\time4j-android-4.8-2021a\AndroidManifest.xml:11:5-20
+MERGED from [net.time4j:time4j-android:4.8-2021a] C:\Users\dhami\.gradle\caches\8.10.2\transforms\d589d1d26e3e9ffc08b891c5737ac828\transformed\time4j-android-4.8-2021a\AndroidManifest.xml:11:5-20
 MERGED from [com.facebook.soloader:soloader:0.12.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\298ba6f8628c1aca8b8363197a55bf8f\transformed\soloader-0.12.1\AndroidManifest.xml:11:5-15:19
 MERGED from [com.facebook.soloader:soloader:0.12.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\298ba6f8628c1aca8b8363197a55bf8f\transformed\soloader-0.12.1\AndroidManifest.xml:11:5-15:19
 MERGED from [com.android.installreferrer:installreferrer:2.2] C:\Users\dhami\.gradle\caches\8.10.2\transforms\0fc32cf077dc2368bcd5cc296267ef97\transformed\installreferrer-2.2\AndroidManifest.xml:11:5-20
@@ -306,7 +310,7 @@ ADDED from C:\RNProjects\TimeKeeper\android\app\src\main\AndroidManifest.xml:17:
 		ADDED from C:\RNProjects\TimeKeeper\android\app\src\main\AndroidManifest.xml:17:80-97
 	android:name
 		ADDED from C:\RNProjects\TimeKeeper\android\app\src\main\AndroidManifest.xml:17:16-79
-activity#com.cody669.TimeKeeper.MainActivity
+activity#com.newArch.timekeeper.MainActivity
 ADDED from C:\RNProjects\TimeKeeper\android\app\src\main\AndroidManifest.xml:18:5-30:16
 	android:screenOrientation
 		ADDED from C:\RNProjects\TimeKeeper\android\app\src\main\AndroidManifest.xml:18:277-313
@@ -332,7 +336,7 @@ category#android.intent.category.LAUNCHER
 ADDED from C:\RNProjects\TimeKeeper\android\app\src\main\AndroidManifest.xml:21:9-68
 	android:name
 		ADDED from C:\RNProjects\TimeKeeper\android\app\src\main\AndroidManifest.xml:21:19-66
-intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:scheme:com.cody669.TimeKeeper+data:scheme:timekeeper
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:scheme:com.newArch.timekeeper+data:scheme:timekeeper
 ADDED from C:\RNProjects\TimeKeeper\android\app\src\main\AndroidManifest.xml:23:7-29:23
 category#android.intent.category.DEFAULT
 ADDED from C:\RNProjects\TimeKeeper\android\app\src\main\AndroidManifest.xml:25:9-67
@@ -356,6 +360,8 @@ MERGED from [:react-native-async-storage_async-storage] C:\RNProjects\TimeKeeper
 MERGED from [:react-native-async-storage_async-storage] C:\RNProjects\TimeKeeper\node_modules\@react-native-async-storage\async-storage\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-community_datetimepicker] C:\RNProjects\TimeKeeper\node_modules\@react-native-community\datetimepicker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-community_datetimepicker] C:\RNProjects\TimeKeeper\node_modules\@react-native-community\datetimepicker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-date-picker] C:\RNProjects\TimeKeeper\node_modules\react-native-date-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-date-picker] C:\RNProjects\TimeKeeper\node_modules\react-native-date-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-reanimated] C:\RNProjects\TimeKeeper\node_modules\react-native-reanimated\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-reanimated] C:\RNProjects\TimeKeeper\node_modules\react-native-reanimated\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:expo-application] C:\RNProjects\TimeKeeper\node_modules\expo-application\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
@@ -620,6 +626,8 @@ MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\dhami\.gradle\cache
 MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\dhami\.gradle\caches\8.10.2\transforms\08ed42ff4603117060e44e0aab292611\transformed\core-runtime-2.2.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.annotation:annotation-experimental:1.4.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\cd2ab677655180239ca5128f2807bd57\transformed\annotation-experimental-1.4.1\AndroidManifest.xml:5:5-44
 MERGED from [androidx.annotation:annotation-experimental:1.4.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\cd2ab677655180239ca5128f2807bd57\transformed\annotation-experimental-1.4.1\AndroidManifest.xml:5:5-44
+MERGED from [net.time4j:time4j-android:4.8-2021a] C:\Users\dhami\.gradle\caches\8.10.2\transforms\d589d1d26e3e9ffc08b891c5737ac828\transformed\time4j-android-4.8-2021a\AndroidManifest.xml:7:5-9:41
+MERGED from [net.time4j:time4j-android:4.8-2021a] C:\Users\dhami\.gradle\caches\8.10.2\transforms\d589d1d26e3e9ffc08b891c5737ac828\transformed\time4j-android-4.8-2021a\AndroidManifest.xml:7:5-9:41
 MERGED from [com.facebook.fbjni:fbjni:0.6.0] C:\Users\dhami\.gradle\caches\8.10.2\transforms\ab403838776104c8b5f93471d162cb09\transformed\fbjni-0.6.0\AndroidManifest.xml:5:5-44
 MERGED from [com.facebook.fbjni:fbjni:0.6.0] C:\Users\dhami\.gradle\caches\8.10.2\transforms\ab403838776104c8b5f93471d162cb09\transformed\fbjni-0.6.0\AndroidManifest.xml:5:5-44
 MERGED from [com.facebook.soloader:soloader:0.12.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\298ba6f8628c1aca8b8363197a55bf8f\transformed\soloader-0.12.1\AndroidManifest.xml:7:5-9:41
@@ -919,7 +927,7 @@ ADDED from [androidx.core:core:1.13.1] C:\Users\dhami\.gradle\caches\8.10.2\tran
 		ADDED from [androidx.core:core:1.13.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\ff2f7080433a150db5a1d0c5225722e6\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
 	android:name
 		ADDED from [androidx.core:core:1.13.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\ff2f7080433a150db5a1d0c5225722e6\transformed\core-1.13.1\AndroidManifest.xml:23:9-81
-permission#com.cody669.TimeKeeper.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+permission#com.newArch.timekeeper.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.13.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\ff2f7080433a150db5a1d0c5225722e6\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
 	android:protectionLevel
 		ADDED from [androidx.core:core:1.13.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\ff2f7080433a150db5a1d0c5225722e6\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
@@ -929,7 +937,7 @@ uses-permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.13.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\ff2f7080433a150db5a1d0c5225722e6\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
 	android:name
 		ADDED from [androidx.core:core:1.13.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\ff2f7080433a150db5a1d0c5225722e6\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
-uses-permission#com.cody669.TimeKeeper.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission#com.newArch.timekeeper.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.13.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\ff2f7080433a150db5a1d0c5225722e6\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
 	android:name
 		ADDED from [androidx.core:core:1.13.1] C:\Users\dhami\.gradle\caches\8.10.2\transforms\ff2f7080433a150db5a1d0c5225722e6\transformed\core-1.13.1\AndroidManifest.xml:26:22-94

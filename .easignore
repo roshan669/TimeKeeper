@@ -1,0 +1,81 @@
+###############################
+
+# EAS Build Ignore File
+
+# Only exclude artifacts & caches that can be safely regenerated.
+
+# Do NOT exclude platform source directories (android/, ios/) needed for building.
+
+###############################
+
+# Dependency directory (EAS will reinstall from package.json)
+
+node_modules/
+
+# Android build outputs & Gradle caches (keep android/ itself!)
+
+android/app/build/
+android/build/
+android/.gradle/
+android/.cxx/
+\*\*/build/outputs/
+
+# Common build/dist artifacts (if you generate them; remove if needed)
+
+dist/
+build/
+coverage/
+reports/
+
+# Expo & Metro caches (safe to ignore)
+
+.expo/
+.expo-shared/
+
+# IDE & tooling metadata
+
+.idea/
+\*.iml
+.vscode/
+
+# Logs
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log\*
+\*.log
+
+# OS junk
+
+.DS_Store
+Thumbs.db
+
+# Fastlane transient outputs (keep metadata for store listings)
+
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+
+# Optional: env files you do NOT want uploaded (uncomment if secrets are injected another way)
+
+# .env.local
+
+# .env.development
+
+# .env.test
+
+# .env.production
+
+# Avoid excluding assets/fonts required at runtime
+
+# assets/
+
+# Do NOT ignore fonts or images unless you have an alternate supply chain.
+
+# If you add iOS native project later, include similar patterns:
+
+# ios/Pods/
+
+# ios/build/
+
+# Keep this file lean; remove entries not relevant to your workflow.

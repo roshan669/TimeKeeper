@@ -16,6 +16,7 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
+import DatePicker from "react-native-date-picker";
 
 const STORAGE_KEY = "@days_since_app_data_v2";
 
@@ -25,6 +26,7 @@ interface modalProps {
   id: string;
   cName: string;
   cDate: string;
+  type: string;
 }
 
 export default function EditModal({
@@ -33,10 +35,10 @@ export default function EditModal({
   id,
   cName,
   cDate,
+  type,
 }: modalProps) {
-  const [date, setDate] = useState<Date>();
+  const [date, setDate] = useState<Date>(new Date());
   const [name, setName] = useState<string>();
-  const [show, setShow] = useState<boolean>(false);
 
   const router = useRouter();
 
@@ -62,34 +64,6 @@ export default function EditModal({
       router.replace("/");
     }
   }
-
-  const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShow(false);
-    if (event.type === "set" && selectedDate) {
-      const newSelection = selectedDate;
-      const previousDate = date || new Date();
-      let mergedDate: Date;
-
-      mergedDate = new Date(previousDate);
-      mergedDate.setFullYear(newSelection.getFullYear());
-      mergedDate.setMonth(newSelection.getMonth());
-      mergedDate.setDate(newSelection.getDate());
-
-      setDate(mergedDate);
-      console.log(mergedDate);
-    } else if (event.type === "dismissed") {
-      setShow(false);
-      setDate(undefined);
-    }
-  };
-
-  const formattedCreatedAt = date?.toLocaleDateString("en-IN", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
-  const showDate = date ? formattedCreatedAt : cDate;
 
   return (
     <Modal
@@ -128,29 +102,12 @@ export default function EditModal({
               />
             </View>
 
-            <TouchableOpacity onPress={() => setShow(true)} style={styles.btn}>
-              <Text
-                style={{
-                  color: "#000",
-                  fontFamily: "Roboto-Regular", // Assuming 'Roboto-Regular' is loaded
-                  fontSize: 25,
-                  fontWeight: "bold",
-                  //   textAlign: "left",
-                }}
-              >
-                {showDate}
-              </Text>
-            </TouchableOpacity>
-
-            {show && (
-              <DateTimePicker
-                value={date ? date : new Date()}
-                mode="date"
-                is24Hour={false}
-                display="spinner"
-                onChange={onChange}
-              />
-            )}
+            <DatePicker
+              title={"Date"}
+              mode={"date"}
+              date={date}
+              onDateChange={setDate}
+            />
 
             <View style={{ flexDirection: "row", gap: 50, marginTop: 25 }}>
               <Button

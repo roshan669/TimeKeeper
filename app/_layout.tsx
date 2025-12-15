@@ -9,6 +9,7 @@ import {
   createStackNavigator,
   StackNavigationOptions,
   StackNavigationEventMap,
+  StackCardInterpolationProps,
 } from "@react-navigation/stack";
 import { ParamListBase, NavigationState } from "@react-navigation/native";
 import { CounterProvider } from "@/context/counterContext";
@@ -23,7 +24,7 @@ export const Stack = withLayoutContext<
 >(Navigator);
 
 // Your custom interpolator for a popping effect
-const forScale = ({ current }) => ({
+const forScale = ({ current }: StackCardInterpolationProps) => ({
   cardStyle: {
     opacity: current.progress, // Fade in the card
     transform: [

@@ -9,16 +9,8 @@ import {
   ActivityIndicator,
   StyleProp,
   ToastAndroid,
-  useColorScheme,
 } from "react-native";
-import {
-  useTheme,
-  Text,
-  IconButton,
-  Appbar,
-  SegmentedButtons,
-  Button,
-} from "react-native-paper";
+import { useTheme, Text, IconButton, Appbar, Button } from "react-native-paper";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -27,23 +19,12 @@ import { format } from "date-fns";
 import { useThemeContext } from "@/context/ThemeContext";
 import { useRouter } from "expo-router";
 import { useCounterContext } from "@/context/counterContext";
-import Animated, {
-  Easing,
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import { runOnJS } from "react-native-reanimated";
 import {
   Directions,
   Gesture,
   GestureDetector,
 } from "react-native-gesture-handler";
-
-const BUTTON_WIDTH = 150;
-const BUTTON_GAP = 0;
-const LEFT_POSITION = 40;
-const RIGHT_POSITION = BUTTON_WIDTH + 60;
 
 // Keep splash screen visible while fonts load or data loads
 SplashScreen.preventAutoHideAsync();
@@ -66,12 +47,13 @@ const STORAGE_KEY = "@days_since_app_data_v2"; // Use versioned key
 
 type themeModeType = "light" | "dark" | "system";
 
+const BUTTON_WIDTH = 120;
+const BUTTON_GAP = 20;
+
 export default function Index() {
   const { themeMode } = useThemeContext();
   const { toggleTheme, setTheme } = useThemeContext();
   const theme = useTheme(); // Access theme colors
-  const sliderTranslateX = useSharedValue(LEFT_POSITION);
-
   const { counters, setCounters, markCounterCompleted } = useCounterContext();
 
   const [isDataLoaded, setIsDataLoaded] = useState(false);
@@ -81,21 +63,6 @@ export default function Index() {
   const [tick, setTick] = useState(0); // State to force updates for elapsed time
 
   const router = useRouter(); // Initialize router
-
-  // setting initial position of slider
-  useEffect(() => {
-    if (currentView === "current") {
-      sliderTranslateX.value = withTiming(LEFT_POSITION, {
-        duration: 180,
-        easing: Easing.linear,
-      });
-    } else {
-      sliderTranslateX.value = withTiming(RIGHT_POSITION, {
-        duration: 180,
-        easing: Easing.linear,
-      });
-    }
-  }, [currentView]);
 
   useEffect(() => {
     const themesetter = async () => {
@@ -130,6 +97,8 @@ export default function Index() {
               hasNotification: c.hasNotification === true,
               type: c.type || "countup",
               completed: c.completed || false,
+              notificationId: c.notificationId,
+              todayNotificationId: c.todayNotificationId,
             })
           );
           setCounters(correctedCounters);
@@ -188,17 +157,8 @@ export default function Index() {
   const handleFlingDirection = (direction: "left" | "right") => {
     if (direction === "right") {
       setCurrentView("current");
-
-      sliderTranslateX.value = withTiming(LEFT_POSITION, {
-        duration: 200,
-        easing: Easing.linear,
-      });
     } else if (direction === "left") {
       setCurrentView("archive");
-      sliderTranslateX.value = withTiming(RIGHT_POSITION, {
-        duration: 200,
-        easing: Easing.linear,
-      });
     }
   };
 
@@ -214,13 +174,6 @@ export default function Index() {
     .onStart(() => {
       runOnJS(handleFlingDirection)("left");
     });
-
-  // slider animation
-  const animatedSliderStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: sliderTranslateX.value }],
-    };
-  });
 
   // --- Filtered Counters for Display ---
   const displayedCounters = useMemo(() => {
@@ -555,15 +508,6 @@ export default function Index() {
       </Appbar.Header>
 
       <View style={styles.segmentContainer}>
-        <Animated.View
-          style={[
-            styles.sliderBackground,
-            animatedSliderStyle,
-            {
-              backgroundColor: "#4285F4",
-            },
-          ]}
-        />
         <Button
           labelStyle={[
             styles.buttonLabel,
@@ -573,7 +517,11 @@ export default function Index() {
             },
           ]}
           onPress={() => setCurrentView("current")}
-          style={[styles.topbtn, styles.transparentButton, {}]}
+          style={[
+            styles.topbtn,
+            styles.transparentButton,
+            currentView === "current" && styles.selectedTab,
+          ]}
           textColor={themeMode === "dark" ? "#fff" : "#000"}
         >
           Counters
@@ -588,7 +536,12 @@ export default function Index() {
             },
           ]}
           onPress={() => setCurrentView("archive")}
-          style={[styles.topbtn, styles.transparentButton]}
+          style={[
+            { borderColor: "#000" },
+            styles.topbtn,
+            styles.transparentButton,
+            currentView === "archive" && styles.selectedTab,
+          ]}
           textColor={themeMode === "dark" ? "#fff" : "#000"}
         >
           Archives
@@ -714,15 +667,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     maxWidth: 145,
   },
-  sliderBackground: {
-    position: "absolute",
-    height: 2,
-    width: BUTTON_WIDTH - 50,
-    backgroundColor: "#FF96A3",
-    borderRadius: 15,
-    left: 5,
-    top: 45,
-    elevation: 1,
+  selectedTab: {
+    borderBottomWidth: 2,
+
+    borderColor: "#4285F4",
+    borderRadius: 0,
   },
   rightColumn: {
     flex: 1,

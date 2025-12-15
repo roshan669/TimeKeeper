@@ -2,7 +2,7 @@
   "expo": {
     "name": "Time Keeper",
     "slug": "TimeKeeper",
-    "version": "2.2.0",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "timekeeper",
@@ -17,8 +17,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.cody669.TimeKeeper",
-
+      "package": "com.newArch.timekeeper",
       "splash": {
         "image": "./assets/images/splash-icon.png",
         "resizeMode": "cover",
@@ -61,6 +60,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "c6c8db29-77fe-424c-adcf-1ae90a9b2487"
+      }
     }
   }
 }

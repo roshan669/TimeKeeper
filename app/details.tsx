@@ -225,6 +225,7 @@ export default function Details() {
               </View>
             </TouchableOpacity>
             <EditModal
+              type={type}
               isVisible={isVisible}
               onClose={() => setIsVisible(false)}
               id={id}
