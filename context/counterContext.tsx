@@ -1,24 +1,26 @@
-import { Counter } from "@/app";
+import { Counter } from "@/types/counter";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Notifications from "expo-notifications";
 import {
   createContext,
   Dispatch,
   SetStateAction,
+  useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
-  useEffect,
-  useCallback,
 } from "react";
-import * as Notifications from "expo-notifications";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Text, View, ActivityIndicator, StyleSheet } from "react-native"; // Import for splash screen
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native"; // Import for splash screen
 
 // Set up notification handler for when the app is in the foreground
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
-    shouldSetBadge: false,
+    shouldSetBadge: true,
+    shouldShowBanner: false,
+    shouldShowList: true,
   }),
 });
 
@@ -37,6 +39,7 @@ type CounterContextType = {
       | "todayNotificationId"
     > & { createdAt: number }
   ) => void;
+  updateCounter: (id: string, updates: Partial<Counter>) => void;
   markCounterCompleted: (counterId: string) => void;
 };
 
@@ -44,6 +47,7 @@ const CounterContext = createContext<CounterContextType>({
   counters: [],
   setCounters: () => console.warn("CounterProvider not used!"),
   addCounter: () => console.warn("CounterProvider not used!"),
+  updateCounter: () => console.warn("CounterProvider not used!"),
   markCounterCompleted: () => console.warn("CounterProvider not used!"),
 });
 
@@ -154,15 +158,6 @@ export const CounterProvider = ({
         }
       }
     });
-
-    return () => {
-      Notifications.removeNotificationSubscription(
-        notificationReceivedListener
-      );
-      Notifications.removeNotificationSubscription(
-        notificationResponseListener
-      );
-    };
   }, [markCounterCompleted]);
 
   const addCounter = useCallback(
@@ -299,14 +294,23 @@ export const CounterProvider = ({
     [markCounterCompleted]
   ); // Depend on markCounterCompleted
 
+  const updateCounter = useCallback((id: string, updates: Partial<Counter>) => {
+    setCounters((prevCounters) =>
+      prevCounters.map((counter) =>
+        counter.id === id ? { ...counter, ...updates } : counter
+      )
+    );
+  }, []);
+
   const contextValue = useMemo(
     () => ({
       counters,
       setCounters,
       addCounter,
+      updateCounter,
       markCounterCompleted,
     }),
-    [counters, setCounters, addCounter, markCounterCompleted]
+    [counters, setCounters, addCounter, updateCounter, markCounterCompleted]
   );
 
   // Splash screen while loading

@@ -1,19 +1,17 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-  TouchableOpacity,
-} from "react-native";
-import React, { useEffect, useState, useRef, useCallback } from "react";
-import { Icon, useTheme } from "react-native-paper";
-import { LinearGradient } from "expo-linear-gradient";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams } from "expo-router";
-import { useFonts } from "expo-font";
-import { Pressable } from "react-native-gesture-handler";
 import EditModal from "@/components/edit.modal";
+import { useFonts } from "expo-font";
+import { LinearGradient } from "expo-linear-gradient";
+import { useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Icon, useTheme } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export interface data {
   hours: string;
@@ -101,41 +99,31 @@ export default function Details() {
     });
   }, []);
 
-  type === "countup"
-    ? useEffect(() => {
-        //  Perform initial calculation immediately
+  useEffect(() => {
+    //  Perform initial calculation immediately
+    if (type === "countup") {
+      calculationsCountup(createdAt);
 
+      // Then set up the interval for subsequent updates
+      intervalRef.current = setInterval(() => {
         calculationsCountup(createdAt);
+      }, 1000);
+    } else {
+      calculationsCountdown(createdAt);
 
-        // Then set up the interval for subsequent updates
-        intervalRef.current = setInterval(() => {
-          calculationsCountup(createdAt);
-        }, 1000);
-
-        // Clean up the interval when the component unmounts
-        return () => {
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-          }
-        };
-      }, [createdAt, calculationsCountup])
-    : useEffect(() => {
-        //  Perform initial calculation immediately
-
+      // Then set up the interval for subsequent updates
+      intervalRef.current = setInterval(() => {
         calculationsCountdown(createdAt);
+      }, 1000);
+    }
 
-        // Then set up the interval for subsequent updates
-        intervalRef.current = setInterval(() => {
-          calculationsCountdown(createdAt);
-        }, 1000);
-
-        // Clean up the interval when the component unmounts
-        return () => {
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-          }
-        };
-      }, [createdAt, calculationsCountdown]);
+    // Clean up the interval when the component unmounts
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [createdAt, calculationsCountup, calculationsCountdown, type]);
 
   const createdAtDate = new Date(createdAt);
 
@@ -144,6 +132,8 @@ export default function Details() {
     month: "long",
     day: "numeric",
   });
+
+  const formattedTime = createdAtDate.toLocaleTimeString();
 
   return (
     <LinearGradient
@@ -160,7 +150,7 @@ export default function Details() {
             <Text style={styles.gradientText}>
               {type === "countup" && "Since"} {formattedCreatedAt}
             </Text>
-            <Text style={[styles.gradientText, { fontSize: 20 }]}>
+            <Text style={[styles.gradientText, { fontSize: 30 }]}>
               {name.substring(0, 20)}
             </Text>
           </View>
@@ -169,7 +159,7 @@ export default function Details() {
         {type === "countup" || completed === "false" ? (
           <View style={styles.timeDisplay}>
             <View style={{ alignItems: "center" }}>
-              <Text style={[styles.timeValue, { fontSize: 60 }]}>
+              <Text style={[styles.timeValue, { fontSize: 70 }]}>
                 {calculated?.days}
               </Text>
 
@@ -177,14 +167,14 @@ export default function Details() {
             </View>
 
             <View style={{ alignItems: "center" }}>
-              <Text style={[styles.timeValue, { fontSize: 55 }]}>
+              <Text style={[styles.timeValue, { fontSize: 60 }]}>
                 {calculated?.hours}
               </Text>
               <Text style={styles.timeLabel}>Hours</Text>
             </View>
 
             <View style={{ alignItems: "center" }}>
-              <Text style={[styles.timeValue, { fontSize: 50 }]}>
+              <Text style={[styles.timeValue, { fontSize: 55 }]}>
                 {calculated?.minutes}
               </Text>
 
@@ -192,7 +182,7 @@ export default function Details() {
             </View>
 
             <View style={{ alignItems: "center" }}>
-              <Text style={[styles.timeValue, { fontSize: 45 }]}>
+              <Text style={[styles.timeValue, { fontSize: 50 }]}>
                 {calculated?.seconds}
               </Text>
 
@@ -207,11 +197,14 @@ export default function Details() {
                 { fontSize: 25, textDecorationLine: "line-through" },
               ]}
             >
-              {name}
+              {name.substring(0, 20)}
             </Text>
             <Text style={[styles.timeValue, { fontSize: 50 }]}>Completed</Text>
-            <Text style={[styles.timeValue, { fontSize: 50 }]}>
+            <Text style={[styles.timeValue, { fontSize: 35 }]}>
               {formattedCreatedAt}
+            </Text>
+            <Text style={[styles.timeValue, { fontSize: 35 }]}>
+              {formattedTime}
             </Text>
           </View>
         )}
@@ -221,7 +214,9 @@ export default function Details() {
             <TouchableOpacity onPress={() => setIsVisible(true)}>
               <View style={styles.btnTxtWrapper}>
                 <Icon source="pencil" size={18} color="#000" />
-                <Text style={styles.gradientText}>EDIT</Text>
+                <Text style={(styles.gradientText, { fontSize: 15 })}>
+                  EDIT
+                </Text>
               </View>
             </TouchableOpacity>
             <EditModal
@@ -263,39 +258,38 @@ const styles = StyleSheet.create({
   },
   gradientText: {
     color: "black",
-    fontFamily: "Roboto-Regular", // Example of applying a specific font
-    fontWeight: "bold",
+    fontFamily: "bung-ee", // Example of applying a specific font
+    fontSize: 20,
+    lineHeight: 40,
   },
   timeDisplay: {
     flex: 1,
     alignItems: "center",
     flexDirection: "column",
-    justifyContent: "flex-start",
+    justifyContent: "center",
+    // justifyContent: "flex-start",
   },
 
   timeValue: {
     fontFamily: "bung-ee", // This is where the custom font is applied
     color: "black",
-    height: 100,
+    lineHeight: 110,
   },
   timeLabel: {
-    fontSize: 20,
+    fontSize: 30,
     color: "black",
     textAlign: "center",
-    // fontWeight: "100",
-    fontFamily: "bung-ee", // Example of applying a specific font
-    height: 40,
+    fontFamily: "bung-ee",
+    lineHeight: 50,
   },
   btnTxtWrapper: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    // padding: 10,
-    // elevation: 2,
-    width: 102,
-    height: 50,
-    borderRadius: 15,
+    minWidth: 102,
+    minHeight: 50,
+    borderRadius: 20,
     borderWidth: 2,
-    gap: 1,
+    gap: 2,
   },
 });

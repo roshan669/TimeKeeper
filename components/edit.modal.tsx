@@ -1,24 +1,18 @@
-import {
-  View,
-  Text,
-  Modal,
-  StyleSheet,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-import React, { useEffect, useState } from "react";
+import { useCounterContext } from "@/context/counterContext";
+import { Counter } from "@/types/counter";
 import { LinearGradient } from "expo-linear-gradient";
-import { Counter } from "@/app"; // Assuming this path is correct for your project
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Button, Icon, TextInput } from "react-native-paper";
-import DateTimePicker, {
-  DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import DatePicker from "react-native-date-picker";
-
-const STORAGE_KEY = "@days_since_app_data_v2";
+import { Button, Icon, TextInput } from "react-native-paper";
 
 interface modalProps {
   isVisible: boolean;
@@ -40,29 +34,24 @@ export default function EditModal({
   const [date, setDate] = useState<Date>(new Date());
   const [name, setName] = useState<string>();
 
+  const { updateCounter } = useCounterContext();
   const router = useRouter();
 
-  async function editCounter(id: string) {
-    const data = await AsyncStorage.getItem(STORAGE_KEY);
-
-    if (data) {
-      const counterArray: Counter[] | null = JSON.parse(data);
-
-      const newCounterArray = counterArray?.map((c) => {
-        if (c.id === id) {
-          if (name !== undefined && name !== null) {
-            c.name = name;
-          }
-          if (date !== undefined && date !== null) {
-            c.createdAt = date.getTime(); // Corrected: use getTime()
-          }
-        }
-        return c;
-      });
-
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newCounterArray));
-      router.replace("/");
+  function editCounter(id: string) {
+    const updates: Partial<Counter> = {};
+    if (name !== undefined && name !== null && name.trim() !== "") {
+      updates.name = name;
     }
+    if (date !== undefined && date !== null) {
+      updates.createdAt = date.getTime();
+    }
+
+    if (Object.keys(updates).length > 0) {
+      updateCounter(id, updates);
+    }
+
+    onClose();
+    router.dismiss();
   }
 
   return (
@@ -77,7 +66,7 @@ export default function EditModal({
       <LinearGradient
         colors={["#FEC9CE", "#FF96A3"]}
         start={{ x: 1, y: 1 }}
-        end={{ x: 1, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={styles.modalContentWrapper}
       >
         <KeyboardAvoidingView
@@ -85,28 +74,37 @@ export default function EditModal({
           style={styles.keyboardAvoidingContainer}
         >
           <View style={styles.container}>
-            <View style={{ width: "80%" }}>
-              <Text style={[styles.modalTitle, { color: "#000" }]}>
+            <Icon size={100} source={"clock-edit-outline"} />
+            <View style={{ width: "100%" }}>
+              <Text
+                style={[styles.modalTitle, { color: "#000", marginTop: 20 }]}
+              >
                 {cName}
               </Text>
               <TextInput
-                // label={cName}
-                placeholder="new name here..."
+                placeholder="New name here (optional)"
                 selectionColor="red"
                 onChangeText={setName}
                 underlineColor="#000"
                 activeUnderlineColor="#000"
                 placeholderTextColor="#000"
+                cursorColor="#000"
                 style={[{ backgroundColor: "" }]}
                 textColor="#000"
+                mode="outlined"
+                outlineStyle={{
+                  borderColor: "#000",
+                  borderRadius: 20,
+                  borderWidth: StyleSheet.hairlineWidth,
+                }}
               />
             </View>
 
             <DatePicker
-              title={"Date"}
-              mode={"date"}
+              mode={"datetime"}
               date={date}
               onDateChange={setDate}
+              maximumDate={new Date()}
             />
 
             <View style={{ flexDirection: "row", gap: 50, marginTop: 25 }}>

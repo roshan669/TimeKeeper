@@ -1,46 +1,40 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
-import {
-  StyleSheet,
-  View,
-  FlatList,
-  Alert,
-  SafeAreaView,
-  TouchableOpacity,
-  ActivityIndicator,
-  StyleProp,
-  ToastAndroid,
-} from "react-native";
-import { useTheme, Text, IconButton, Appbar, Button } from "react-native-paper";
-import { useFonts } from "expo-font";
-import * as SplashScreen from "expo-splash-screen";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { LinearGradient } from "expo-linear-gradient";
-import { format } from "date-fns";
-import { useThemeContext } from "@/context/ThemeContext";
-import { useRouter } from "expo-router";
 import { useCounterContext } from "@/context/counterContext";
-import { runOnJS } from "react-native-reanimated";
+import { useThemeContext } from "@/context/ThemeContext";
+import { Counter } from "@/types/counter";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { format } from "date-fns";
+import { useFonts } from "expo-font";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleProp,
+  StyleSheet,
+  ToastAndroid,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {
   Directions,
   Gesture,
   GestureDetector,
 } from "react-native-gesture-handler";
+import { Appbar, Button, IconButton, Text, useTheme } from "react-native-paper";
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // Keep splash screen visible while fonts load or data loads
 SplashScreen.preventAutoHideAsync();
-
-// --- Counter Interface ---
-export interface Counter {
-  id: string;
-  name: string;
-  createdAt: number; // Timestamp (milliseconds since epoch) when created
-  isArchived: boolean; // For Current/Past tabs
-  hasNotification?: boolean; // Optional: for the bell icon
-  type: "countdown" | "countup";
-  completed: boolean;
-  notificationId: string | undefined;
-  todayNotificationId?: string;
-}
 
 // --- AsyncStorage Key ---
 const STORAGE_KEY = "@days_since_app_data_v2"; // Use versioned key
@@ -48,7 +42,10 @@ const STORAGE_KEY = "@days_since_app_data_v2"; // Use versioned key
 type themeModeType = "light" | "dark" | "system";
 
 const BUTTON_WIDTH = 120;
-const BUTTON_GAP = 20;
+const BUTTON_GAP = 100;
+const LEFT_POSITION = 0;
+const RIGHT_POSITION = BUTTON_WIDTH + BUTTON_GAP;
+const TOP_BAR_WIDTH = BUTTON_WIDTH * 2 + BUTTON_GAP;
 
 export default function Index() {
   const { themeMode } = useThemeContext();
@@ -63,6 +60,29 @@ export default function Index() {
   const [tick, setTick] = useState(0); // State to force updates for elapsed time
 
   const router = useRouter(); // Initialize router
+
+  // Shared value for the slider's translateX position
+  const sliderTranslateX = useSharedValue(LEFT_POSITION);
+
+  useEffect(() => {
+    if (currentView === "current") {
+      sliderTranslateX.value = withTiming(LEFT_POSITION, {
+        duration: 170,
+        easing: Easing.linear,
+      });
+    } else {
+      sliderTranslateX.value = withTiming(RIGHT_POSITION, {
+        duration: 170,
+        easing: Easing.linear,
+      });
+    }
+  }, [currentView]);
+
+  const animatedSliderStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: sliderTranslateX.value }],
+    };
+  });
 
   useEffect(() => {
     const themesetter = async () => {
@@ -334,7 +354,7 @@ export default function Index() {
             router.push({
               pathname: "/details",
               params: {
-                creation: item.createdAt,
+                creation: item.createdAt.toString(),
                 name: item.name,
                 id: item.id.toString(),
                 type: item.type.toString(),
@@ -486,7 +506,7 @@ export default function Index() {
   }
 
   return (
-    <SafeAreaView
+    <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       {/* Custom Header */}
@@ -496,7 +516,23 @@ export default function Index() {
         style={{ backgroundColor: theme.colors.background }}
       >
         <Appbar.Action icon="theme-light-dark" onPress={() => toggleTheme()} />
-        <Appbar.Content title="" />
+        <Appbar.Content
+          title=""
+          titleStyle={{
+            fontFamily: "bung-ee",
+            alignSelf: "flex-start",
+            // paddingHorizontal: 5,
+            fontSize: 25,
+          }}
+        />
+
+        <Appbar.Action
+          icon="fire-circle"
+          size={28}
+          onPress={() => {
+            router.push("/subscriptions");
+          }}
+        />
         <Appbar.Action
           icon="plus"
           size={28}
@@ -508,6 +544,7 @@ export default function Index() {
       </Appbar.Header>
 
       <View style={styles.segmentContainer}>
+        <Animated.View style={[styles.sliderBackground, animatedSliderStyle]} />
         <Button
           labelStyle={[
             styles.buttonLabel,
@@ -520,7 +557,7 @@ export default function Index() {
           style={[
             styles.topbtn,
             styles.transparentButton,
-            currentView === "current" && styles.selectedTab,
+            // currentView === "current" && styles.selectedTab, // Removed old selected style
           ]}
           textColor={themeMode === "dark" ? "#fff" : "#000"}
         >
@@ -537,10 +574,10 @@ export default function Index() {
           ]}
           onPress={() => setCurrentView("archive")}
           style={[
-            { borderColor: "#000" },
+            // { borderColor: "#000" }, // Removed border
             styles.topbtn,
             styles.transparentButton,
-            currentView === "archive" && styles.selectedTab,
+            // currentView === "archive" && styles.selectedTab, // Removed old selected style
           ]}
           textColor={themeMode === "dark" ? "#fff" : "#000"}
         >
@@ -566,7 +603,7 @@ export default function Index() {
                 {currentView === "current" &&
                   isDataLoaded &&
                   displayedCounters.length === 0 && (
-                    <Text style={styles.emptyText}>Press '+' to add one!</Text>
+                    <Text style={styles.emptyText}>Press + to add one!</Text>
                   )}
               </View>
             }
@@ -574,7 +611,7 @@ export default function Index() {
           />
         </View>
       </GestureDetector>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -611,14 +648,26 @@ const styles = StyleSheet.create({
   },
   segmentContainer: {
     flexDirection: "row",
-    width: "100%",
-    justifyContent: "space-evenly",
+    width: TOP_BAR_WIDTH, // Fixed width
+    justifyContent: "center", // Center content
     alignItems: "center",
     marginBottom: 20,
     gap: BUTTON_GAP,
     position: "relative",
     borderRadius: 10,
     padding: 5,
+    alignSelf: "center", // Center the container itself
+  },
+  sliderBackground: {
+    position: "absolute",
+    height: 2,
+    width: BUTTON_WIDTH - 3,
+    backgroundColor: "#4285F4", // Or any color you prefer for the slider
+    borderRadius: 30, // Match button border radius
+    left: 5, // Adjust for padding
+    top: 45, // Adjust for padding
+    elevation: 1,
+    zIndex: 0,
   },
   segmentButtons: {
     borderRadius: 10,
@@ -666,12 +715,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     maxWidth: 145,
-  },
-  selectedTab: {
-    borderBottomWidth: 2,
-
-    borderColor: "#4285F4",
-    borderRadius: 0,
   },
   rightColumn: {
     flex: 1,

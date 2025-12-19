@@ -1,18 +1,19 @@
-import React, { useMemo } from "react";
 import { withLayoutContext } from "expo-router";
+import React, { useMemo } from "react";
 import { StatusBar } from "react-native";
-import { MD3LightTheme, MD3DarkTheme, PaperProvider } from "react-native-paper";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 
+import { CounterProvider } from "@/context/counterContext";
+import { RevenueCatProvider } from "@/context/RevenueCatContext";
 import { ThemeProvider, useThemeContext } from "@/context/ThemeContext";
+import { NavigationState, ParamListBase } from "@react-navigation/native";
 import {
   createStackNavigator,
-  StackNavigationOptions,
-  StackNavigationEventMap,
   StackCardInterpolationProps,
+  StackNavigationEventMap,
+  StackNavigationOptions,
 } from "@react-navigation/stack";
-import { ParamListBase, NavigationState } from "@react-navigation/native";
-import { CounterProvider } from "@/context/counterContext";
 
 const { Navigator } = createStackNavigator();
 
@@ -99,6 +100,13 @@ function RootContent() {
             presentation: "transparentModal",
           }}
         />
+        <Stack.Screen
+          name="subscriptions"
+          options={{
+            headerShown: false,
+            cardStyleInterpolator: forScale,
+          }}
+        />
       </Stack>
     </PaperProvider>
   );
@@ -107,12 +115,14 @@ function RootContent() {
 // Default export is what Expo Router renders for this layout
 export default function Layout() {
   return (
-    <ThemeProvider>
-      <CounterProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <RootContent />
-        </GestureHandlerRootView>
-      </CounterProvider>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <CounterProvider>
+          <RevenueCatProvider>
+            <RootContent />
+          </RevenueCatProvider>
+        </CounterProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

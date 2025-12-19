@@ -1,53 +1,49 @@
-import {
-  View,
-  StyleSheet,
-  Text,
-  BackHandler,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-} from "react-native";
-import React, { useState, useEffect } from "react";
 import { LinearGradient } from "expo-linear-gradient";
-import { Button, Icon, TextInput, useTheme } from "react-native-paper";
-import DateTimePicker, {
-  DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { BackHandler, StyleSheet, Text, View } from "react-native";
+import { Button, Icon, TextInput } from "react-native-paper";
 
+import { useCounterContext } from "@/context/counterContext";
+import { CounterType } from "@/types/counter";
+import { useNavigation } from "expo-router"; // Import useNavigation from expo-router
+import DatePicker from "react-native-date-picker";
 import {
-  Gesture,
   Directions,
+  Gesture,
   GestureDetector,
-  GestureHandlerRootView, // This is only needed once in your root layout, remove from here if already in _layout.tsx
 } from "react-native-gesture-handler";
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  runOnJS,
   Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
-import { Link, useNavigation } from "expo-router"; // Import useNavigation from expo-router
-import { useCounterContext } from "@/context/counterContext";
 
 // Define props for this screen (if you need to pass data)
 // For now, let's assume state management for new counter is internal or via context
 
 const BUTTON_WIDTH = 140;
-const BUTTON_GAP = 5;
+const BUTTON_GAP = 50;
 const LEFT_POSITION = 0;
-const RIGHT_POSITION = BUTTON_WIDTH;
+const RIGHT_POSITION = BUTTON_WIDTH + BUTTON_GAP;
+const TOP_BAR_WIDTH = BUTTON_WIDTH * 2 + BUTTON_GAP;
+const FAR_PAST = new Date(Date.UTC(1970, 0, 1));
+const FAR_FUTURE = new Date(Date.UTC(2100, 0, 1));
 
 export default function AddModalScreen() {
   const navigation = useNavigation(); // Use useNavigation hook
 
   const [newCounterName, setNewCounterName] = useState<string>("");
   const [type, setType] = useState<"countup" | "countdown">("countup"); // Default type
-  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [date, setDate] = useState<Date>(new Date());
+  const [error, setError] = useState<string>("");
 
-  const [mode, setMode] = useState<"date" | "time">("date"); // Specify modes
-  const [show, setShow] = useState(false);
   const { addCounter } = useCounterContext();
+
+  const now = useMemo(() => new Date(), [type]);
+  const minDate = type === CounterType.COUNTUP ? FAR_PAST : now;
+  const maxDate = type === CounterType.COUNTUP ? now : FAR_FUTURE;
 
   // Shared value for the slider's translateX position
   const sliderTranslateX = useSharedValue(LEFT_POSITION);
@@ -55,82 +51,47 @@ export default function AddModalScreen() {
   useEffect(() => {
     if (type === "countup") {
       sliderTranslateX.value = withTiming(LEFT_POSITION, {
-        duration: 170,
+        duration: 200,
         easing: Easing.linear,
       });
     } else {
       sliderTranslateX.value = withTiming(RIGHT_POSITION, {
-        duration: 170,
+        duration: 200,
         easing: Easing.linear,
       });
     }
   }, [type]);
 
-  const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShow(false);
-    if (event.type === "set" && selectedDate) {
-      const newSelection = selectedDate;
-      const previousDate = date || new Date();
-      let mergedDate: Date;
-      if (mode === "date") {
-        mergedDate = new Date(previousDate);
-        mergedDate.setFullYear(newSelection.getFullYear());
-        mergedDate.setMonth(newSelection.getMonth());
-        mergedDate.setDate(newSelection.getDate());
-      } else {
-        mergedDate = new Date(previousDate);
-        mergedDate.setHours(newSelection.getHours());
-        mergedDate.setMinutes(newSelection.getMinutes());
-        mergedDate.setSeconds(newSelection.getSeconds());
+  const applyType = useCallback((nextType: CounterType) => {
+    setDate((prev) => {
+      const current = new Date();
+      if (
+        nextType === CounterType.COUNTUP &&
+        prev.getTime() > current.getTime()
+      ) {
+        return current;
       }
-      setDate(mergedDate);
-    } else if (event.type === "dismissed") {
-      setShow(false);
-      setDate(undefined);
-    }
-  };
-
-  const showMode = (currentMode: "date" | "time") => {
-    // Specify modes
-    setShow(true);
-    setMode(currentMode);
-  };
-
-  const showDatepicker = () => {
-    showMode("date");
-  };
-
-  const showTimepicker = () => {
-    showMode("time");
-  };
-  const theme = useTheme();
-
-  const handleFlingDirection = (direction: "left" | "right") => {
-    if (direction === "right") {
-      setType("countup");
-      sliderTranslateX.value = withTiming(LEFT_POSITION, {
-        duration: 200,
-        easing: Easing.linear,
-      });
-    } else if (direction === "left") {
-      setType("countdown");
-      sliderTranslateX.value = withTiming(RIGHT_POSITION, {
-        duration: 200,
-        easing: Easing.linear,
-      });
-    }
-  };
+      if (
+        nextType === CounterType.COUNTDOWN &&
+        prev.getTime() < current.getTime()
+      ) {
+        return current;
+      }
+      return prev;
+    });
+    setType(nextType);
+  }, []);
 
   const flingRightGesture = Gesture.Fling()
     .direction(Directions.RIGHT)
     .onStart(() => {
-      runOnJS(handleFlingDirection)("right");
+      runOnJS(applyType)(CounterType.COUNTUP);
     });
 
   const flingLeftGesture = Gesture.Fling()
     .direction(Directions.LEFT)
     .onStart(() => {
-      runOnJS(handleFlingDirection)("left");
+      runOnJS(applyType)(CounterType.COUNTDOWN);
     });
 
   const animatedSliderStyle = useAnimatedStyle(() => {
@@ -142,9 +103,19 @@ export default function AddModalScreen() {
   const handleAddCounter = () => {
     if (!newCounterName.trim()) {
       // This now catches "", " ", "   ", "\t\n", etc.
-      alert("Please enter a name for your counter."); // Using alert() as you indicated
+      setError("Please enter a name for your counter."); // Using alert() as you indicated
       return;
     }
+    if (type === CounterType.COUNTDOWN && date < new Date()) {
+      setError("Please select a future date for the countdown counter.");
+      return;
+    }
+
+    if (type === CounterType.COUNTUP && date > new Date()) {
+      setError("Please select a Past date for the countup counter.");
+      return;
+    }
+
     addCounter({
       name: newCounterName.trim(),
       createdAt: date ? date.getTime() : Date.now(), // Use selected date or current time
@@ -154,10 +125,10 @@ export default function AddModalScreen() {
     navigation.goBack();
   };
 
-  const onClose = () => {
-    setDate(undefined);
+  const onClose = useCallback(() => {
+    setDate(new Date());
     navigation.goBack(); // Dismiss the modal using navigation
-  };
+  }, [navigation]);
 
   // Handle Android back button
   useEffect(() => {
@@ -176,8 +147,8 @@ export default function AddModalScreen() {
       colors={
         type === "countdown" ? ["#E0E0E0", "#4285F4"] : ["#FFD9CE", "#FF76A3"]
       }
-      start={{ x: 1, y: 1 }}
-      end={{ x: 0, y: 0 }}
+      start={{ x: 0, y: 1 }}
+      end={{ x: 1, y: 1 }}
       // Apply modal styles here directly to the content wrapper
       style={[styles.addgradient, styles.modalContentWrapper]} // Add modalContentWrapper
     >
@@ -191,7 +162,10 @@ export default function AddModalScreen() {
           <Text
             style={[
               styles.modalTitle,
-              { color: type === "countdown" ? "#e0e0e0" : "#000" },
+              {
+                color: type === "countdown" ? "#e0e0e0" : "#000",
+                marginBottom: 30,
+              },
             ]}
           >
             Add New Counter
@@ -211,7 +185,7 @@ export default function AddModalScreen() {
                   textAlignVertical: "center",
                 },
               ]}
-              onPress={() => setType("countup")}
+              onPress={() => applyType(CounterType.COUNTUP)}
               style={[styles.topbtn, styles.transparentButton]}
             >
               Countup
@@ -225,7 +199,7 @@ export default function AddModalScreen() {
                   fontWeight: type === "countdown" ? "bold" : "900",
                 },
               ]}
-              onPress={() => setType("countdown")}
+              onPress={() => applyType(CounterType.COUNTDOWN)}
               style={[styles.topbtn, styles.transparentButton]}
             >
               Countdown
@@ -239,50 +213,33 @@ export default function AddModalScreen() {
             onChangeText={setNewCounterName}
             underlineColor="#000"
             activeUnderlineColor="#000"
-            mode="flat"
+            mode="outlined"
+            activeOutlineColor="#d3d3d3ff"
             style={[styles.modalInput, { backgroundColor: "" }]}
+            outlineStyle={{
+              borderRadius: 20,
+              borderWidth: StyleSheet.hairlineWidth,
+            }}
           />
-          <Button
-            style={[
-              styles.modalButton,
-              {
-                backgroundColor: "#E0E0E0",
-              },
-            ]}
-            labelStyle={styles.buttonLabel}
-            mode="elevated"
-            elevation={5}
-            onPress={showDatepicker}
-          >
-            {date ? date.toLocaleString() : "Select Date"}
-          </Button>
-          <Button
-            style={[
-              styles.modalButton,
-              {
-                marginTop: 10,
-                backgroundColor: "#E0E0E0",
-              },
-            ]}
-            labelStyle={[styles.buttonLabel]}
-            mode="elevated"
-            elevation={5}
-            onPress={showTimepicker}
-          >
-            Change Time
-          </Button>
-
-          {show && (
-            <DateTimePicker
-              value={date ? date : new Date()}
-              mode={mode}
-              is24Hour={false}
-              display="spinner"
-              onChange={onChange}
-              minimumDate={type === "countup" ? undefined : new Date()}
-              maximumDate={type === "countup" ? new Date() : undefined}
-            />
+          {error.trim().length > 0 && (
+            <Text
+              style={{
+                fontSize: 14,
+                color: "red",
+                textAlign: "center",
+              }}
+            >
+              {error}
+            </Text>
           )}
+
+          <DatePicker
+            style={styles.spinner}
+            mode="datetime"
+            onDateChange={setDate}
+            date={date}
+            is24hourSource="locale"
+          />
 
           <View style={styles.modalButtonRow}>
             <Button
@@ -312,7 +269,7 @@ export default function AddModalScreen() {
               Add
             </Button>
           </View>
-          <Link
+          {/* <Link
             href={"https://www.github.com//roshan669"}
             style={{
               // fontWeight: "bold",
@@ -324,7 +281,7 @@ export default function AddModalScreen() {
             }}
           >
             <Icon source={"github"} size={30} />
-          </Link>
+          </Link> */}
         </View>
       </GestureDetector>
     </LinearGradient>
@@ -344,7 +301,6 @@ const styles = StyleSheet.create({
     flex: 1, // This outer wrapper expands to fill the entire screen, allowing for centering
     justifyContent: "center", // Center content vertically
     alignItems: "center", // Center content horizontally
-
     paddingVertical: 40,
   },
   innerContentContainer: {
@@ -359,7 +315,7 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto-Bold",
     fontSize: 15,
   },
-  modalInput: { marginBottom: 25 },
+  modalInput: { marginBottom: 5, borderRadius: 50 },
   modalButtonRow: {
     flexDirection: "row",
     justifyContent: "center",
@@ -370,31 +326,31 @@ const styles = StyleSheet.create({
     minWidth: 110,
     borderRadius: 8,
   },
+  spinner: {
+    alignSelf: "center",
+  },
   buttonLabel: {
     color: "#000",
     fontSize: 15,
   },
   topBarContainer: {
     flexDirection: "row",
-    width: "100%",
-    // justifyContent: "center",
-    // alignItems: "center",
-    // textAlignVertical: "center",
-    marginBottom: 10,
+    width: TOP_BAR_WIDTH,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 25,
     gap: BUTTON_GAP,
     position: "relative",
-    borderRadius: 8,
-    padding: 5,
+    alignSelf: "center",
   },
   sliderBackground: {
     position: "absolute",
     height: "100%",
-    width: BUTTON_WIDTH + 10,
+    width: BUTTON_WIDTH,
     backgroundColor: "#E0E0E0",
     borderRadius: 15,
-    left: 5,
-    top: 5,
-    // bottom: 13,
+    left: 0,
+    top: 0,
     elevation: 1,
   },
   topbtn: {

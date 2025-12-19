@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Time Keeper",
+    "name": "TimeKeeper",
     "slug": "TimeKeeper",
-    "version": "1.2.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "timekeeper",
@@ -12,62 +12,49 @@
       "supportsTablet": true
     },
     "android": {
-      "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#000000"
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "package": "com.newArch.timekeeper",
-      "splash": {
-        "image": "./assets/images/splash-icon.png",
-        "resizeMode": "cover",
-        "backgroundColor": "#ffffff",
-        "image-width": 150,
-        "dark": {
-          "image": "./assets/images/splash-icon.png",
-          "image-width": 150,
-          "resizeMode": "cover",
-          "backgroundColor": "#000000"
-        }
-      }
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.cody669.TimeKeeper"
     },
     "web": {
-      "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/icon.png"
     },
     "plugins": [
       "expo-router",
       [
-        "expo-font",
+        "expo-splash-screen",
         {
-          "fonts": ["./assets/fonts"]
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "backgroundColor": "#000000"
+          }
         }
       ],
       [
-        "expo-splash-screen",
+        "expo-build-properties",
         {
-          "backgroundColor": "#000000",
-          "image": "./assets/images/splash-icon.png",
-          "dark": {
-            "image": "./assets/images/splash-icon.png",
-            "backgroundColor": "#000000"
-          },
-          "imageWidth": 150,
-          "resizeMode": "cover"
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "buildToolsVersion": "36.0.0",
+            "buildArchs": ["x86_64"]
+          }
         }
       ]
     ],
     "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "router": {
-        "origin": false
-      },
-      "eas": {
-        "projectId": "c6c8db29-77fe-424c-adcf-1ae90a9b2487"
-      }
+      "typedRoutes": true,
+      "reactCompiler": true
     }
   }
 }
