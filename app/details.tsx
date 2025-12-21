@@ -9,6 +9,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { Icon, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -21,6 +22,15 @@ export interface data {
 }
 
 export default function Details() {
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
+  const scale = Math.min(width / 375, height / 812); // Base on iPhone X dimensions
+
+  const normalize = (size: number) => {
+    const newSize = size * scale;
+    return Math.round(newSize);
+  };
+
   const [fontsLoaded] = useFonts({
     // Renamed 'loaded' to 'fontsLoaded' for clarity
     "Roboto-Regular": require("@/assets/fonts/roboto.ttf"),
@@ -28,17 +38,6 @@ export default function Details() {
     "my-font": require("@/assets/fonts/myfont.ttf"), // Double-check this path and internal font name
     "bung-ee": require("@/assets/fonts/bungee.ttf"), // Double-check this path and internal font name
   });
-
-  // If fonts are not loaded, display a loading indicator or null
-  if (!fontsLoaded) {
-    // console.log("Fonts are not loaded yet..."); // For debugging
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#fff" />
-        <Text style={{ color: "#fff", marginTop: 10 }}>Loading Fonts...</Text>
-      </View>
-    );
-  }
 
   // console.log("Fonts loaded! Rendering content."); // For debugging
 
@@ -135,6 +134,17 @@ export default function Details() {
 
   const formattedTime = createdAtDate.toLocaleTimeString();
 
+  // If fonts are not loaded, display a loading indicator or null
+  if (!fontsLoaded) {
+    // console.log("Fonts are not loaded yet..."); // For debugging
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#fff" />
+        <Text style={{ color: "#fff", marginTop: 10 }}>Loading Fonts...</Text>
+      </View>
+    );
+  }
+
   return (
     <LinearGradient
       colors={
@@ -147,10 +157,20 @@ export default function Details() {
       <SafeAreaView style={styles.addgradient}>
         {completed === "false" && (
           <View style={styles.topContainer}>
-            <Text style={styles.gradientText}>
+            <Text
+              style={[
+                styles.gradientText,
+                { fontSize: normalize(20), lineHeight: normalize(40) },
+              ]}
+            >
               {type === "countup" && "Since"} {formattedCreatedAt}
             </Text>
-            <Text style={[styles.gradientText, { fontSize: 30 }]}>
+            <Text
+              style={[
+                styles.gradientText,
+                { fontSize: normalize(30), lineHeight: normalize(40) },
+              ]}
+            >
               {name.substring(0, 20)}
             </Text>
           </View>
@@ -159,34 +179,82 @@ export default function Details() {
         {type === "countup" || completed === "false" ? (
           <View style={styles.timeDisplay}>
             <View style={{ alignItems: "center" }}>
-              <Text style={[styles.timeValue, { fontSize: 70 }]}>
+              <Text
+                style={[
+                  styles.timeValue,
+                  { fontSize: normalize(70), lineHeight: normalize(110) },
+                ]}
+              >
                 {calculated?.days}
               </Text>
 
-              <Text style={styles.timeLabel}>Days</Text>
+              <Text
+                style={[
+                  styles.timeLabel,
+                  { fontSize: normalize(30), lineHeight: normalize(50) },
+                ]}
+              >
+                Days
+              </Text>
             </View>
 
             <View style={{ alignItems: "center" }}>
-              <Text style={[styles.timeValue, { fontSize: 60 }]}>
+              <Text
+                style={[
+                  styles.timeValue,
+                  { fontSize: normalize(60), lineHeight: normalize(90) },
+                ]}
+              >
                 {calculated?.hours}
               </Text>
-              <Text style={styles.timeLabel}>Hours</Text>
+              <Text
+                style={[
+                  styles.timeLabel,
+                  { fontSize: normalize(30), lineHeight: normalize(50) },
+                ]}
+              >
+                Hours
+              </Text>
             </View>
 
             <View style={{ alignItems: "center" }}>
-              <Text style={[styles.timeValue, { fontSize: 55 }]}>
+              <Text
+                style={[
+                  styles.timeValue,
+                  { fontSize: normalize(55), lineHeight: normalize(80) },
+                ]}
+              >
                 {calculated?.minutes}
               </Text>
 
-              <Text style={styles.timeLabel}>Minutes</Text>
+              <Text
+                style={[
+                  styles.timeLabel,
+                  { fontSize: normalize(30), lineHeight: normalize(50) },
+                ]}
+              >
+                Minutes
+              </Text>
             </View>
 
             <View style={{ alignItems: "center" }}>
-              <Text style={[styles.timeValue, { fontSize: 50 }]}>
+              <Text
+                style={[
+                  styles.timeValue,
+                  { fontSize: normalize(50), lineHeight: normalize(70) },
+                ]}
+              >
                 {calculated?.seconds}
               </Text>
 
-              <Text style={styles.timeLabel}>Seconds</Text>
+              <Text
+                style={[
+                  styles.timeLabel,
+                  { fontSize: normalize(30), lineHeight: normalize(50) },
+                ]}
+              >
+                Seconds
+              </Text>
             </View>
           </View>
         ) : (
@@ -194,16 +262,37 @@ export default function Details() {
             <Text
               style={[
                 styles.timeValue,
-                { fontSize: 25, textDecorationLine: "line-through" },
+                {
+                  fontSize: normalize(25),
+                  textDecorationLine: "line-through",
+                  lineHeight: normalize(40),
+                },
               ]}
             >
               {name.substring(0, 20)}
             </Text>
-            <Text style={[styles.timeValue, { fontSize: 50 }]}>Completed</Text>
-            <Text style={[styles.timeValue, { fontSize: 35 }]}>
+            <Text
+              style={[
+                styles.timeValue,
+                { fontSize: normalize(50), lineHeight: normalize(70) },
+              ]}
+            >
+              Completed
+            </Text>
+            <Text
+              style={[
+                styles.timeValue,
+                { fontSize: normalize(35), lineHeight: normalize(50) },
+              ]}
+            >
               {formattedCreatedAt}
             </Text>
-            <Text style={[styles.timeValue, { fontSize: 35 }]}>
+            <Text
+              style={[
+                styles.timeValue,
+                { fontSize: normalize(35), lineHeight: normalize(50) },
+              ]}
+            >
               {formattedTime}
             </Text>
           </View>
@@ -213,8 +302,10 @@ export default function Details() {
           <>
             <TouchableOpacity onPress={() => setIsVisible(true)}>
               <View style={styles.btnTxtWrapper}>
-                <Icon source="pencil" size={18} color="#000" />
-                <Text style={(styles.gradientText, { fontSize: 15 })}>
+                <Icon source="pencil" size={normalize(18)} color="#000" />
+                <Text
+                  style={[styles.gradientText, { fontSize: normalize(15) }]}
+                >
                   EDIT
                 </Text>
               </View>
@@ -248,39 +339,42 @@ const styles = StyleSheet.create({
   topContainer: {
     justifyContent: "center",
     alignItems: "center",
-    height: 60,
+    // height: 60, // Removed fixed height
     marginTop: 20,
+    marginBottom: 10, // Added margin bottom for spacing
   },
   addgradient: {
-    height: "97%",
+    flex: 1, // Changed from height: "97%" to flex: 1
     width: "100%",
     alignItems: "center",
+    paddingVertical: 10, // Added padding
   },
   gradientText: {
     color: "black",
     fontFamily: "bung-ee", // Example of applying a specific font
-    fontSize: 20,
-    lineHeight: 40,
+    // fontSize: 20, // Removed fixed fontSize
+    // lineHeight: 40, // Removed fixed lineHeight
   },
   timeDisplay: {
     flex: 1,
     alignItems: "center",
     flexDirection: "column",
-    justifyContent: "center",
+    justifyContent: "space-evenly", // Changed from center to space-evenly for better distribution
     // justifyContent: "flex-start",
+    // maxHeight: 500,
   },
 
   timeValue: {
     fontFamily: "bung-ee", // This is where the custom font is applied
     color: "black",
-    lineHeight: 110,
+    // lineHeight: 110, // Removed fixed lineHeight
   },
   timeLabel: {
-    fontSize: 30,
+    // fontSize: 30, // Removed fixed fontSize
     color: "black",
     textAlign: "center",
     fontFamily: "bung-ee",
-    lineHeight: 50,
+    // lineHeight: 50, // Removed fixed lineHeight
   },
   btnTxtWrapper: {
     flexDirection: "row",

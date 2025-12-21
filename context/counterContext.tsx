@@ -1,4 +1,5 @@
 import { Counter } from "@/types/counter";
+import { MyWidget } from "@/widget/CounterList";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import {
@@ -11,7 +12,14 @@ import {
   useMemo,
   useState,
 } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native"; // Import for splash screen
+import {
+  ActivityIndicator,
+  Appearance,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native"; // Import for splash screen
+import { requestWidgetUpdate } from "react-native-android-widget";
 
 // Set up notification handler for when the app is in the foreground
 Notifications.setNotificationHandler({
@@ -24,7 +32,7 @@ Notifications.setNotificationHandler({
   }),
 });
 
-const STORAGE_KEY = "@my_countdown_app:counters";
+const STORAGE_KEY = "@days_since_app_data_v2";
 
 type CounterContextType = {
   counters: Counter[];
@@ -83,6 +91,15 @@ export const CounterProvider = ({
       const saveCounters = async () => {
         try {
           await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(counters));
+          requestWidgetUpdate({
+            widgetName: "Hello",
+            renderWidget: () => (
+              <MyWidget data={counters} theme={Appearance.getColorScheme()} />
+            ),
+            widgetNotFound: () => {
+              // Called if no widget is added
+            },
+          });
         } catch (e) {
           console.error("Failed to save counters to storage", e);
         }

@@ -1,6 +1,12 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { BackHandler, StyleSheet, Text, View } from "react-native";
+import {
+  BackHandler,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { Button, Icon, TextInput } from "react-native-paper";
 
 import { useCounterContext } from "@/context/counterContext";
@@ -23,16 +29,21 @@ import Animated, {
 // Define props for this screen (if you need to pass data)
 // For now, let's assume state management for new counter is internal or via context
 
-const BUTTON_WIDTH = 140;
-const BUTTON_GAP = 50;
-const LEFT_POSITION = 0;
-const RIGHT_POSITION = BUTTON_WIDTH + BUTTON_GAP;
-const TOP_BAR_WIDTH = BUTTON_WIDTH * 2 + BUTTON_GAP;
 const FAR_PAST = new Date(Date.UTC(1970, 0, 1));
 const FAR_FUTURE = new Date(Date.UTC(2100, 0, 1));
 
 export default function AddModalScreen() {
   const navigation = useNavigation(); // Use useNavigation hook
+  const { width, height } = useWindowDimensions();
+
+  const scale = Math.min(width / 375, height / 812);
+  const normalize = (size: number) => Math.round(size * scale);
+
+  const BUTTON_WIDTH = normalize(120); // Slightly smaller for elegance
+  const BUTTON_GAP = normalize(20); // Closer gap
+  const LEFT_POSITION = 0;
+  const RIGHT_POSITION = BUTTON_WIDTH + BUTTON_GAP;
+  const TOP_BAR_WIDTH = BUTTON_WIDTH * 2 + BUTTON_GAP;
 
   const [newCounterName, setNewCounterName] = useState<string>("");
   const [type, setType] = useState<"countup" | "countdown">("countup"); // Default type
@@ -60,7 +71,7 @@ export default function AddModalScreen() {
         easing: Easing.linear,
       });
     }
-  }, [type]);
+  }, [type, LEFT_POSITION, RIGHT_POSITION]);
 
   const applyType = useCallback((nextType: CounterType) => {
     setDate((prev) => {
@@ -147,13 +158,19 @@ export default function AddModalScreen() {
       colors={
         type === "countdown" ? ["#E0E0E0", "#4285F4"] : ["#FFD9CE", "#FF76A3"]
       }
-      start={{ x: 0, y: 1 }}
-      end={{ x: 1, y: 1 }}
+      start={{ x: 1, y: 1 }}
+      end={{ x: 0, y: 0 }}
       // Apply modal styles here directly to the content wrapper
       style={[styles.addgradient, styles.modalContentWrapper]} // Add modalContentWrapper
     >
-      <View style={{ marginTop: 100, marginBottom: 5 }}>
-        <Icon source={"timer-sand-empty"} size={100} color={"#E0E0E0"} />
+      <View
+        style={{ flex: 0.3, justifyContent: "center", alignItems: "center" }}
+      >
+        <Icon
+          source={"timer-sand-empty"}
+          size={normalize(80)}
+          color={"#E0E0E0"}
+        />
       </View>
       <GestureDetector
         gesture={Gesture.Simultaneous(flingRightGesture, flingLeftGesture)}
@@ -164,29 +181,43 @@ export default function AddModalScreen() {
               styles.modalTitle,
               {
                 color: type === "countdown" ? "#e0e0e0" : "#000",
-                marginBottom: 30,
+                marginBottom: normalize(30),
+                fontSize: normalize(20),
               },
             ]}
           >
             Add New Counter
           </Text>
 
-          <View style={styles.topBarContainer}>
+          <View
+            style={[
+              styles.topBarContainer,
+              { width: TOP_BAR_WIDTH, gap: BUTTON_GAP },
+            ]}
+          >
             <Animated.View
-              style={[styles.sliderBackground, animatedSliderStyle]}
+              style={[
+                styles.sliderBackground,
+                animatedSliderStyle,
+                { width: BUTTON_WIDTH },
+              ]}
             />
 
             <Button
               labelStyle={[
                 styles.buttonLabel,
                 {
-                  fontSize: type === "countup" ? 17 : 15,
+                  fontSize: normalize(type === "countup" ? 16 : 14),
                   fontWeight: type === "countup" ? "bold" : "900",
                   textAlignVertical: "center",
                 },
               ]}
               onPress={() => applyType(CounterType.COUNTUP)}
-              style={[styles.topbtn, styles.transparentButton]}
+              style={[
+                styles.topbtn,
+                styles.transparentButton,
+                { width: BUTTON_WIDTH },
+              ]}
             >
               Countup
             </Button>
@@ -195,12 +226,16 @@ export default function AddModalScreen() {
               labelStyle={[
                 styles.buttonLabel,
                 {
-                  fontSize: type === "countdown" ? 17 : 15,
+                  fontSize: normalize(type === "countdown" ? 16 : 14),
                   fontWeight: type === "countdown" ? "bold" : "900",
                 },
               ]}
               onPress={() => applyType(CounterType.COUNTDOWN)}
-              style={[styles.topbtn, styles.transparentButton]}
+              style={[
+                styles.topbtn,
+                styles.transparentButton,
+                { width: BUTTON_WIDTH },
+              ]}
             >
               Countdown
             </Button>
@@ -215,7 +250,10 @@ export default function AddModalScreen() {
             activeUnderlineColor="#000"
             mode="outlined"
             activeOutlineColor="#d3d3d3ff"
-            style={[styles.modalInput, { backgroundColor: "" }]}
+            style={[
+              styles.modalInput,
+              { backgroundColor: "transparent", fontSize: normalize(16) },
+            ]}
             outlineStyle={{
               borderRadius: 20,
               borderWidth: StyleSheet.hairlineWidth,
@@ -224,24 +262,33 @@ export default function AddModalScreen() {
           {error.trim().length > 0 && (
             <Text
               style={{
-                fontSize: 14,
+                fontSize: normalize(14),
                 color: "red",
                 textAlign: "center",
+                marginBottom: normalize(10),
               }}
             >
               {error}
             </Text>
           )}
 
-          <DatePicker
-            style={styles.spinner}
-            mode="datetime"
-            onDateChange={setDate}
-            date={date}
-            is24hourSource="locale"
-          />
+          <View style={{ alignItems: "center", marginVertical: normalize(10) }}>
+            <DatePicker
+              dividerColor="#000"
+              style={styles.spinner}
+              mode="datetime"
+              onDateChange={setDate}
+              date={date}
+              is24hourSource="locale"
+            />
+          </View>
 
-          <View style={styles.modalButtonRow}>
+          <View
+            style={[
+              styles.modalButtonRow,
+              { gap: normalize(40), marginTop: normalize(15) },
+            ]}
+          >
             <Button
               mode="elevated"
               onPress={onClose} // Use onClose to dismiss
@@ -249,9 +296,10 @@ export default function AddModalScreen() {
                 styles.modalButton,
                 {
                   backgroundColor: "#E0E0E0",
+                  minWidth: normalize(100),
                 },
               ]}
-              labelStyle={styles.buttonLabel}
+              labelStyle={{ color: "#000", fontSize: normalize(15) }}
             >
               Cancel
             </Button>
@@ -262,9 +310,10 @@ export default function AddModalScreen() {
                 styles.modalButton,
                 {
                   backgroundColor: "#E0E0E0",
+                  minWidth: normalize(100),
                 },
               ]}
-              labelStyle={styles.buttonLabel}
+              labelStyle={{ color: "#000", fontSize: normalize(15) }}
             >
               Add
             </Button>
@@ -294,14 +343,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "100%", // Will take 100% of `modalContentWrapper`'s width
     borderRadius: 16,
-    padding: 30,
+    padding: 20,
     gap: 15,
   },
   modalContentWrapper: {
     flex: 1, // This outer wrapper expands to fill the entire screen, allowing for centering
     justifyContent: "center", // Center content vertically
     alignItems: "center", // Center content horizontally
-    paddingVertical: 40,
+    paddingVertical: 20,
   },
   innerContentContainer: {
     // This is now your actual modal content, without the gradient
@@ -320,14 +369,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     marginTop: 15,
-    gap: 60,
+    // gap: 60, // Handled inline
   },
   modalButton: {
-    minWidth: 110,
+    // minWidth: 110, // Handled inline
     borderRadius: 8,
   },
   spinner: {
     alignSelf: "center",
+    color: "#000",
   },
   buttonLabel: {
     color: "#000",
@@ -335,18 +385,18 @@ const styles = StyleSheet.create({
   },
   topBarContainer: {
     flexDirection: "row",
-    width: TOP_BAR_WIDTH,
+    // width: TOP_BAR_WIDTH, // Handled inline
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 25,
-    gap: BUTTON_GAP,
+    // gap: BUTTON_GAP, // Handled inline
     position: "relative",
     alignSelf: "center",
   },
   sliderBackground: {
     position: "absolute",
     height: "100%",
-    width: BUTTON_WIDTH,
+    // width: BUTTON_WIDTH, // Handled inline
     backgroundColor: "#E0E0E0",
     borderRadius: 15,
     left: 0,
@@ -354,7 +404,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   topbtn: {
-    width: BUTTON_WIDTH,
+    // width: BUTTON_WIDTH, // Handled inline
     // padding: 5,
     // borderRadius: 30,
     // zIndex: 1,

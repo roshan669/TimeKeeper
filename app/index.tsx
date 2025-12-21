@@ -42,7 +42,7 @@ const STORAGE_KEY = "@days_since_app_data_v2"; // Use versioned key
 type themeModeType = "light" | "dark" | "system";
 
 const BUTTON_WIDTH = 120;
-const BUTTON_GAP = 100;
+const BUTTON_GAP = 80;
 const LEFT_POSITION = 0;
 const RIGHT_POSITION = BUTTON_WIDTH + BUTTON_GAP;
 const TOP_BAR_WIDTH = BUTTON_WIDTH * 2 + BUTTON_GAP;
@@ -479,9 +479,6 @@ export default function Index() {
   ); // Added router, handleDeleteCounter, etc. to dependencies
 
   // --- Main Render ---
-  if (!loaded || !isDataLoaded) {
-    return null;
-  }
   if (error) {
     console.error("Font loading error:", error);
     return (
@@ -495,11 +492,26 @@ export default function Index() {
           <Text
             style={{ color: theme?.colors?.error || "red", marginBottom: 10 }}
           >
-            Error loading application assets.
+            Error loading fonts.
           </Text>
           <Text style={{ color: theme?.colors?.onSurface || "#000" }}>
-            Please restart the app. Font: {error.message}
+            {error?.message || "Unknown error"}
           </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!loaded || !isDataLoaded) {
+    return (
+      <SafeAreaView
+        style={[
+          styles.container,
+          { backgroundColor: theme?.colors?.background || "#fff" },
+        ]}
+      >
+        <View style={styles.centeredError}>
+          <ActivityIndicator size="large" />
         </View>
       </SafeAreaView>
     );
@@ -516,21 +528,13 @@ export default function Index() {
         style={{ backgroundColor: theme.colors.background }}
       >
         <Appbar.Action icon="theme-light-dark" onPress={() => toggleTheme()} />
-        <Appbar.Content
-          title=""
-          titleStyle={{
-            fontFamily: "bung-ee",
-            alignSelf: "flex-start",
-            // paddingHorizontal: 5,
-            fontSize: 25,
-          }}
-        />
+        <Appbar.Content title="" />
 
         <Appbar.Action
           icon="fire-circle"
           size={28}
           onPress={() => {
-            router.push("/subscriptions");
+            router.push("/CounterWidgetPreview");
           }}
         />
         <Appbar.Action

@@ -20,7 +20,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.cody669.TimeKeeper"
+      "package": "com.newArch.TimeKeeper"
     },
     "web": {
       "output": "static",
@@ -50,11 +50,31 @@
             "buildArchs": ["x86_64"]
           }
         }
-      ]
+      ],
+      [
+        "react-native-android-widget",
+        {
+          "fonts": ["./assets/fonts/bungee.ttf"],
+          "widgets": [
+            {
+              "name": "TimeKeeper",
+              "label": "TimeKeeper Widget",
+              "minWidth": "320dp",
+              "minHeight": "120dp",
+              "resizeMode": "horizontal|vertical",
+              "targetCellWidth": 5,
+              "targetCellHeight": 3,
+              "description": "All Counter on your home ",
+              "previewImage": "./assets/images/icon.png",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": true
     }
   }
 }

@@ -5,7 +5,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 
 import { CounterProvider } from "@/context/counterContext";
-import { RevenueCatProvider } from "@/context/RevenueCatContext";
 import { ThemeProvider, useThemeContext } from "@/context/ThemeContext";
 import { NavigationState, ParamListBase } from "@react-navigation/native";
 import {
@@ -100,11 +99,14 @@ function RootContent() {
             presentation: "transparentModal",
           }}
         />
+
         <Stack.Screen
-          name="subscriptions"
+          name="CounterWidgetPreview"
           options={{
-            headerShown: false,
+            headerShown: true,
             cardStyleInterpolator: forScale,
+
+            // presentation: "transparentModal",
           }}
         />
       </Stack>
@@ -118,9 +120,7 @@ export default function Layout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
         <CounterProvider>
-          <RevenueCatProvider>
-            <RootContent />
-          </RevenueCatProvider>
+          <RootContent />
         </CounterProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
