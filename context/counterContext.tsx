@@ -92,7 +92,7 @@ export const CounterProvider = ({
         try {
           await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(counters));
           requestWidgetUpdate({
-            widgetName: "Hello",
+            widgetName: "TimeKeeper",
             renderWidget: () => (
               <MyWidget data={counters} theme={Appearance.getColorScheme()} />
             ),
