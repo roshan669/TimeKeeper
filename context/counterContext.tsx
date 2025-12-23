@@ -20,6 +20,7 @@ import {
   View,
 } from "react-native"; // Import for splash screen
 import { requestWidgetUpdate } from "react-native-android-widget";
+import { useThemeContext } from "./ThemeContext";
 
 // Set up notification handler for when the app is in the foreground
 Notifications.setNotificationHandler({
@@ -64,6 +65,7 @@ export const CounterProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const { themeMode } = useThemeContext();
   const [counters, setCounters] = useState<Counter[]>([]);
   const [isReady, setIsReady] = useState(false);
 
@@ -333,9 +335,14 @@ export const CounterProvider = ({
   // Splash screen while loading
   if (!isReady) {
     return (
-      <View style={styles.splashContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text style={styles.splashText}>Loading Counters...</Text>
+      <View
+        style={[
+          styles.splashContainer,
+          { backgroundColor: themeMode === "dark" ? "#000" : "#fff" },
+        ]}
+      >
+        <ActivityIndicator size="large" color="#FF76A3" />
+        <Text style={styles.splashText}>Loading...</Text>
       </View>
     );
   }

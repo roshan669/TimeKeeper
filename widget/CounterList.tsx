@@ -146,8 +146,8 @@ export function MyWidget({ data, theme }: counterprops) {
               key={i}
               style={{
                 width: "match_parent",
-                paddingBottom: 16, // Add spacing wrapper
-                paddingHorizontal: 16,
+                paddingBottom: 14, // Add spacing wrapper
+                paddingHorizontal: 14,
               }}
             >
               <FlexWidget
@@ -181,6 +181,7 @@ export function MyWidget({ data, theme }: counterprops) {
                     justifyContent: "center",
                     // alignItems: "flex-start",
                     width: "wrap_content",
+                    alignItems: "center",
                   }}
                 >
                   <TextWidget
@@ -190,13 +191,15 @@ export function MyWidget({ data, theme }: counterprops) {
                       fontFamily: "bungee",
                       color: "#000000",
                       height: 45,
-                      textAlign: "right",
+                      textAlign: "center",
                     }}
                   />
                   <TextWidget
                     text={label}
                     style={{
-                      fontSize: 12,
+                      fontSize: 8,
+                      // height: 20,
+                      // width: 20,
                       fontFamily: "bungee",
                       color: "#000000",
                       // opacity: 0.7,
@@ -217,14 +220,14 @@ export function MyWidget({ data, theme }: counterprops) {
                   <TextWidget
                     text={dateText}
                     style={{
-                      fontSize: 12,
+                      fontSize: 10,
                       fontFamily: "bungee",
                       color: "#000000",
                       marginBottom: 4,
                     }}
                   />
                   <TextWidget
-                    text={counter.name}
+                    text={counter.name.substring(0, 10)}
                     style={{
                       fontSize: 18,
                       fontFamily: "bungee",

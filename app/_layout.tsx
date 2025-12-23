@@ -6,6 +6,7 @@ import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 
 import { CounterProvider } from "@/context/counterContext";
 import { ThemeProvider, useThemeContext } from "@/context/ThemeContext";
+import { TickProvider } from "@/context/TickContext";
 import { NavigationState, ParamListBase } from "@react-navigation/native";
 import {
   createStackNavigator,
@@ -120,7 +121,9 @@ export default function Layout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
         <CounterProvider>
-          <RootContent />
+          <TickProvider>
+            <RootContent />
+          </TickProvider>
         </CounterProvider>
       </ThemeProvider>
     </GestureHandlerRootView>

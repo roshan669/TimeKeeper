@@ -1,10 +1,9 @@
+import CounterItem from "@/components/CounterItem";
 import { useCounterContext } from "@/context/counterContext";
 import { useThemeContext } from "@/context/ThemeContext";
 import { Counter } from "@/types/counter";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { format } from "date-fns";
 import { useFonts } from "expo-font";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -12,10 +11,8 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  StyleProp,
   StyleSheet,
   ToastAndroid,
-  TouchableOpacity,
   View,
 } from "react-native";
 import {
@@ -23,7 +20,7 @@ import {
   Gesture,
   GestureDetector,
 } from "react-native-gesture-handler";
-import { Appbar, Button, IconButton, Text, useTheme } from "react-native-paper";
+import { Appbar, Button, Text, useTheme } from "react-native-paper";
 import Animated, {
   Easing,
   runOnJS,
@@ -57,7 +54,6 @@ export default function Index() {
   const [currentView, setCurrentView] = useState<"current" | "archive">(
     "current"
   );
-  const [tick, setTick] = useState(0); // State to force updates for elapsed time
 
   const router = useRouter(); // Initialize router
 
@@ -155,24 +151,6 @@ export default function Index() {
     saveCounters();
   }, [counters, isDataLoaded]);
 
-  // --- Global Timer for Live Elapsed Time Updates ---
-  useEffect(() => {
-    const activeTimeCounters = counters.filter(
-      (c) => !c.isArchived && Date.now() - c.createdAt < 24 * 60 * 60 * 1000
-    );
-    if (activeTimeCounters.length === 0) {
-      return;
-    }
-
-    const intervalId = setInterval(() => {
-      setTick((prev) => prev + 1);
-    }, 1000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [counters, currentView]);
-
   // helper function for setting state of view
   const handleFlingDirection = (direction: "left" | "right") => {
     if (direction === "right") {
@@ -202,281 +180,79 @@ export default function Index() {
     );
   }, [counters, currentView]);
 
-  const handleDeleteCounter = (id: string) => {
-    const counterToDelete = counters.find((c) => c.id === id);
-    Alert.alert(
-      "Delete Counter",
-      `Are you sure you want to delete "${
-        counterToDelete?.name || "this counter"
-      }"? This cannot be undone.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => {
-            setCounters((prevCounters) =>
-              prevCounters.filter((counter) => counter.id !== id)
-            );
+  const handleDeleteCounter = useCallback(
+    (id: string) => {
+      const counterToDelete = counters.find((c) => c.id === id);
+      Alert.alert(
+        "Delete Counter",
+        `Are you sure you want to delete "${
+          counterToDelete?.name || "this counter"
+        }"? This cannot be undone.`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => {
+              setCounters((prevCounters) =>
+                prevCounters.filter((counter) => counter.id !== id)
+              );
+            },
           },
-        },
-      ]
-    );
-  };
+        ]
+      );
+    },
+    [counters, setCounters]
+  );
 
-  const handleArchiveToggle = (id: string) => {
-    const targetCounter = counters.find((c) => c.id === id);
-    if (!targetCounter || targetCounter.completed === true) return;
+  const handleArchiveToggle = useCallback(
+    (id: string) => {
+      const targetCounter = counters.find((c) => c.id === id);
+      if (!targetCounter || targetCounter.completed === true) return;
 
-    const nextIsArchived = !targetCounter.isArchived;
-    setCounters((prevCounters) =>
-      prevCounters.map((counter) =>
-        counter.id === id ? { ...counter, isArchived: nextIsArchived } : counter
-      )
-    );
-    ToastAndroid.show(
-      `"${targetCounter.name}" moved to ${
-        nextIsArchived ? "Past" : "Current"
-      }.`,
-      1000
-    );
-  };
+      const nextIsArchived = !targetCounter.isArchived;
+      setCounters((prevCounters) =>
+        prevCounters.map((counter) =>
+          counter.id === id
+            ? { ...counter, isArchived: nextIsArchived }
+            : counter
+        )
+      );
+      ToastAndroid.show(
+        `"${targetCounter.name}" moved to ${
+          nextIsArchived ? "Past" : "Current"
+        }.`,
+        1000
+      );
+    },
+    [counters, setCounters]
+  );
 
-  const handleComplete = (id: string) => {
-    const targetCounter = counters.find((c) => c.id === id);
-    if (!targetCounter) return;
+  const handleComplete = useCallback(
+    (id: string) => {
+      const targetCounter = counters.find((c) => c.id === id);
+      if (!targetCounter) return;
 
-    markCounterCompleted(id);
-    ToastAndroid.show(`"${targetCounter.name}" moved to ${"Past"}.`, 1000);
-  };
-
-  const calculateCountup = (elapsedMs: number, baseStyle: StyleProp<any>) => {
-    const totalSeconds = Math.floor(elapsedMs / 1000);
-    const totalMinutes = Math.floor(totalSeconds / 60);
-    const totalHours = Math.floor(totalMinutes / 60);
-    const totalDays = Math.floor(totalHours / 24);
-
-    let displayValue: string | number;
-    let displayLabel: string;
-    let isDaysView = false;
-
-    if (totalDays > 0) {
-      displayValue = totalDays;
-      displayLabel = totalDays === 1 ? "DAY SINCE" : "DAYS SINCE";
-      isDaysView = true;
-      baseStyle = styles.daysNumber;
-    } else if (totalHours >= 1) {
-      displayValue = totalHours;
-      displayLabel = "HOURS SINCE";
-    } else if (totalMinutes >= 1) {
-      displayValue = totalMinutes;
-      displayLabel = "MINUTES SINCE";
-    } else {
-      displayValue = totalSeconds;
-      displayLabel = "SECONDS SINCE";
-    }
-
-    return {
-      displayLabel,
-      displayValue,
-      isDaysView,
-      remainingSeconds: 1, // Placeholder for countup
-    };
-  };
-
-  const calculateCountdown = (
-    forthcommingMs: number,
-    baseStyle: StyleProp<any>
-  ) => {
-    const remainingSeconds = Math.floor(forthcommingMs / 1000);
-    const remainingMinutes = Math.floor(remainingSeconds / 60);
-    const remainingHours = Math.floor(remainingMinutes / 60);
-    const remainingDays = Math.floor(remainingHours / 24);
-
-    let displayValue: string | number;
-    let displayLabel: string;
-    let isDaysView = false;
-
-    if (remainingDays > 0) {
-      displayValue = remainingDays;
-      displayLabel = remainingDays === 1 ? "DAY TO" : "DAYS TO";
-      isDaysView = true;
-      baseStyle = styles.daysNumber;
-    } else if (remainingHours >= 1) {
-      displayValue = remainingHours;
-      displayLabel = "HOURS TO";
-    } else if (remainingMinutes >= 1) {
-      displayValue = remainingMinutes;
-      displayLabel = "MINUTES TO";
-    } else {
-      displayValue = remainingSeconds;
-      displayLabel = "SECONDS TO";
-    }
-
-    return {
-      displayLabel,
-      displayValue,
-      isDaysView,
-      remainingSeconds,
-    };
-  };
+      markCounterCompleted(id);
+      ToastAndroid.show(`"${targetCounter.name}" moved to ${"Past"}.`, 1000);
+    },
+    [counters, markCounterCompleted]
+  );
 
   // --- Render Item for FlatList ---
   const renderCounterItem = useCallback(
     ({ item }: { item: Counter }) => {
-      const now = Date.now();
-      const elapsedMs = Math.max(0, now - item.createdAt);
-      const forthcommingMs = Math.max(0, item.createdAt - now);
-
-      let baseStyle = styles.hoursMinutesSecondsNumber; // Default to H/M/S style
-
-      const { displayLabel, displayValue, isDaysView, remainingSeconds } =
-        item.type === "countdown"
-          ? calculateCountdown(forthcommingMs, baseStyle)
-          : calculateCountup(elapsedMs, baseStyle);
-
-      const formattedDate = format(new Date(item.createdAt), "MMM dd, yyyy");
-
-      if (
-        item.type === "countdown" &&
-        remainingSeconds <= 0 &&
-        !item.completed
-      ) {
-        setTimeout(() => {
-          handleComplete(item.id);
-        }, 0);
-      }
-
       return (
-        <TouchableOpacity
-          onPress={() => {
-            // No need for setSelectedCounter if passing params directly
-            router.push({
-              pathname: "/details",
-              params: {
-                creation: item.createdAt.toString(),
-                name: item.name,
-                id: item.id.toString(),
-                type: item.type.toString(),
-                completed: item.completed.toString(),
-              },
-            });
-          }}
-          onLongPress={() => handleArchiveToggle(item.id)}
-          delayLongPress={1000}
-        >
-          <View style={styles.cardContainer}>
-            <LinearGradient
-              colors={
-                item.type === "countdown"
-                  ? ["#E0E0E0", "#4285F4"]
-                  : ["#FEC9CE", "#FF96A1"]
-              }
-              start={{ x: 1, y: 1 }}
-              end={{ x: 0, y: 0 }}
-              style={styles.gradient}
-            >
-              {!item.completed ? (
-                <View style={styles.cardContent}>
-                  {/* Left Side */}
-                  <View style={styles.leftColumn}>
-                    <Text
-                      style={[baseStyle]}
-                      key={
-                        !isDaysView && !item.isArchived
-                          ? `time-${tick}`
-                          : `static-${item.id}`
-                      }
-                    >
-                      {displayValue}
-                    </Text>
-                    <Text style={styles.daysLabel}>{displayLabel}</Text>
-                  </View>
-
-                  {/* Right Side */}
-                  <View style={styles.rightColumn}>
-                    <Text style={styles.dateText}>{formattedDate}</Text>
-                    <Text
-                      style={styles.nameText}
-                      numberOfLines={2}
-                      ellipsizeMode="tail"
-                    >
-                      {item.name}
-                    </Text>
-                  </View>
-
-                  {/* Optional: Notification Bell Icon */}
-                  {item.hasNotification && (
-                    <IconButton
-                      icon="bell-outline"
-                      size={18}
-                      style={styles.notificationIcon}
-                      iconColor={"rgba(0, 0, 0, 0.6)"}
-                    />
-                  )}
-
-                  {/* Trash Icon */}
-                  <IconButton
-                    icon="delete-outline"
-                    size={20}
-                    onPress={() => handleDeleteCounter(item.id)}
-                    iconColor={theme.colors.onPrimary}
-                    style={styles.deleteIcon}
-                  />
-                </View>
-              ) : (
-                <View
-                  style={[
-                    styles.cardContent,
-                    {
-                      flexDirection: "column",
-                      alignItems: "flex-start",
-                      justifyContent: "center",
-                      maxHeight: 120,
-                      paddingVertical: 0,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.hoursMinutesSecondsNumber,
-                      {
-                        fontSize: 40,
-                        lineHeight: 50,
-                        textDecorationLine: "line-through",
-                      },
-                    ]}
-                  >
-                    {item.name.substring(0, 10)}
-                  </Text>
-                  <IconButton
-                    icon="delete-outline"
-                    size={20}
-                    onPress={() => handleDeleteCounter(item.id)}
-                    iconColor={theme.colors.onPrimary}
-                    style={styles.deleteIcon}
-                  />
-                  <Text
-                    style={[styles.hoursMinutesSecondsNumber, { fontSize: 30 }]}
-                  >
-                    completed
-                  </Text>
-                </View>
-              )}
-            </LinearGradient>
-          </View>
-        </TouchableOpacity>
+        <CounterItem
+          item={item}
+          handleDeleteCounter={handleDeleteCounter}
+          handleArchiveToggle={handleArchiveToggle}
+          handleComplete={handleComplete}
+        />
       );
     },
-    [
-      theme.colors.error,
-      tick,
-      router,
-      handleDeleteCounter,
-      handleArchiveToggle,
-      handleComplete,
-    ]
-  ); // Added router, handleDeleteCounter, etc. to dependencies
+    [handleDeleteCounter, handleArchiveToggle, handleComplete]
+  );
 
   // --- Main Render ---
   if (error) {
@@ -530,13 +306,13 @@ export default function Index() {
         <Appbar.Action icon="theme-light-dark" onPress={() => toggleTheme()} />
         <Appbar.Content title="" />
 
-        <Appbar.Action
+        {/* <Appbar.Action
           icon="fire-circle"
           size={28}
           onPress={() => {
             router.push("/CounterWidgetPreview");
           }}
-        />
+        /> */}
         <Appbar.Action
           icon="plus"
           size={28}

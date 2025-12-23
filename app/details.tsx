@@ -11,7 +11,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import { Icon, useTheme } from "react-native-paper";
+import { Icon } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export interface data {
@@ -23,7 +23,6 @@ export interface data {
 
 export default function Details() {
   const { width, height } = useWindowDimensions();
-  const isLandscape = width > height;
   const scale = Math.min(width / 375, height / 812); // Base on iPhone X dimensions
 
   const normalize = (size: number) => {
@@ -41,7 +40,6 @@ export default function Details() {
 
   // console.log("Fonts loaded! Rendering content."); // For debugging
 
-  const theme = useTheme();
   const { creation, name, id, type, completed } = useLocalSearchParams<{
     creation: string;
     name: string;
@@ -52,7 +50,7 @@ export default function Details() {
   const createdAt = parseInt(Array.isArray(creation) ? creation[0] : creation);
 
   const [calculated, setCalculated] = useState<data | undefined>();
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | number | null>(null);
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
   const calculationsCountup = useCallback((creationTimestamp: number) => {
@@ -382,7 +380,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minWidth: 102,
     minHeight: 50,
-    borderRadius: 20,
+    borderRadius: 24,
     borderWidth: 2,
     gap: 2,
   },

@@ -1,5 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   BackHandler,
   StyleSheet,
@@ -29,9 +29,6 @@ import Animated, {
 // Define props for this screen (if you need to pass data)
 // For now, let's assume state management for new counter is internal or via context
 
-const FAR_PAST = new Date(Date.UTC(1970, 0, 1));
-const FAR_FUTURE = new Date(Date.UTC(2100, 0, 1));
-
 export default function AddModalScreen() {
   const navigation = useNavigation(); // Use useNavigation hook
   const { width, height } = useWindowDimensions();
@@ -40,7 +37,7 @@ export default function AddModalScreen() {
   const normalize = (size: number) => Math.round(size * scale);
 
   const BUTTON_WIDTH = normalize(120); // Slightly smaller for elegance
-  const BUTTON_GAP = normalize(20); // Closer gap
+  const BUTTON_GAP = normalize(50); // Closer gap
   const LEFT_POSITION = 0;
   const RIGHT_POSITION = BUTTON_WIDTH + BUTTON_GAP;
   const TOP_BAR_WIDTH = BUTTON_WIDTH * 2 + BUTTON_GAP;
@@ -51,10 +48,6 @@ export default function AddModalScreen() {
   const [error, setError] = useState<string>("");
 
   const { addCounter } = useCounterContext();
-
-  const now = useMemo(() => new Date(), [type]);
-  const minDate = type === CounterType.COUNTUP ? FAR_PAST : now;
-  const maxDate = type === CounterType.COUNTUP ? now : FAR_FUTURE;
 
   // Shared value for the slider's translateX position
   const sliderTranslateX = useSharedValue(LEFT_POSITION);
@@ -118,12 +111,12 @@ export default function AddModalScreen() {
       return;
     }
     if (type === CounterType.COUNTDOWN && date < new Date()) {
-      setError("Please select a future date for the countdown counter.");
+      setError("Please select a future date for the countdown.");
       return;
     }
 
     if (type === CounterType.COUNTUP && date > new Date()) {
-      setError("Please select a Past date for the countup counter.");
+      setError("Please select a Past date for the countup.");
       return;
     }
 
@@ -164,7 +157,11 @@ export default function AddModalScreen() {
       style={[styles.addgradient, styles.modalContentWrapper]} // Add modalContentWrapper
     >
       <View
-        style={{ flex: 0.3, justifyContent: "center", alignItems: "center" }}
+        style={{
+          flex: 0.2,
+          justifyContent: "flex-end",
+          alignItems: "center",
+        }}
       >
         <Icon
           source={"timer-sand-empty"}
@@ -207,17 +204,13 @@ export default function AddModalScreen() {
               labelStyle={[
                 styles.buttonLabel,
                 {
-                  fontSize: normalize(type === "countup" ? 16 : 14),
-                  fontWeight: type === "countup" ? "bold" : "900",
+                  fontSize: normalize(16),
+                  fontWeight: "bold",
                   textAlignVertical: "center",
                 },
               ]}
               onPress={() => applyType(CounterType.COUNTUP)}
-              style={[
-                styles.topbtn,
-                styles.transparentButton,
-                { width: BUTTON_WIDTH },
-              ]}
+              style={[styles.transparentButton, { width: BUTTON_WIDTH }]}
             >
               Countup
             </Button>
@@ -226,45 +219,42 @@ export default function AddModalScreen() {
               labelStyle={[
                 styles.buttonLabel,
                 {
-                  fontSize: normalize(type === "countdown" ? 16 : 14),
-                  fontWeight: type === "countdown" ? "bold" : "900",
+                  fontSize: normalize(16),
+                  fontWeight: "bold",
                 },
               ]}
               onPress={() => applyType(CounterType.COUNTDOWN)}
-              style={[
-                styles.topbtn,
-                styles.transparentButton,
-                { width: BUTTON_WIDTH },
-              ]}
+              style={[styles.transparentButton, { width: BUTTON_WIDTH }]}
             >
               Countdown
             </Button>
           </View>
 
           <TextInput
-            placeholder="Set Name"
+            placeholder="Name"
             placeholderTextColor="#000"
             textColor="#000"
             onChangeText={setNewCounterName}
             underlineColor="#000"
             activeUnderlineColor="#000"
-            mode="outlined"
-            activeOutlineColor="#d3d3d3ff"
+            mode="flat"
+            activeOutlineColor="#000"
             style={[
               styles.modalInput,
-              { backgroundColor: "transparent", fontSize: normalize(16) },
+              {
+                width: "80%",
+                backgroundColor: "transparent",
+                fontSize: normalize(16),
+              },
             ]}
-            outlineStyle={{
-              borderRadius: 20,
-              borderWidth: StyleSheet.hairlineWidth,
-            }}
           />
           {error.trim().length > 0 && (
             <Text
               style={{
-                fontSize: normalize(14),
+                fontSize: normalize(12),
                 color: "red",
                 textAlign: "center",
+                fontWeight: "bold",
                 marginBottom: normalize(10),
               }}
             >
@@ -272,14 +262,21 @@ export default function AddModalScreen() {
             </Text>
           )}
 
-          <View style={{ alignItems: "center", marginVertical: normalize(10) }}>
+          <View
+            style={{
+              marginVertical: normalize(20),
+              width: "100%",
+              alignItems: "center",
+            }}
+          >
             <DatePicker
+              theme="light"
               dividerColor="#000"
               style={styles.spinner}
               mode="datetime"
               onDateChange={setDate}
               date={date}
-              is24hourSource="locale"
+              is24hourSource="device"
             />
           </View>
 
@@ -291,31 +288,32 @@ export default function AddModalScreen() {
           >
             <Button
               mode="elevated"
-              onPress={onClose} // Use onClose to dismiss
-              style={[
-                styles.modalButton,
-                {
-                  backgroundColor: "#E0E0E0",
-                  minWidth: normalize(100),
-                },
-              ]}
-              labelStyle={{ color: "#000", fontSize: normalize(15) }}
-            >
-              Cancel
-            </Button>
-            <Button
-              mode="elevated"
               onPress={handleAddCounter}
               style={[
                 styles.modalButton,
                 {
                   backgroundColor: "#E0E0E0",
-                  minWidth: normalize(100),
+                  minWidth: normalize(200),
                 },
               ]}
               labelStyle={{ color: "#000", fontSize: normalize(15) }}
             >
-              Add
+              Add Counter
+            </Button>
+
+            <Button
+              mode="elevated"
+              onPress={onClose} // Use onClose to dismiss
+              style={[
+                styles.modalButton,
+                {
+                  backgroundColor: "#E0E0E0",
+                  minWidth: normalize(250),
+                },
+              ]}
+              labelStyle={{ color: "#000", fontSize: normalize(15) }}
+            >
+              Cancel
             </Button>
           </View>
           {/* <Link
@@ -337,12 +335,11 @@ export default function AddModalScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   addgradient: {
     flex: 1, // Will expand to fill the available space provided by `modalContentWrapper`
     justifyContent: "center",
     width: "100%", // Will take 100% of `modalContentWrapper`'s width
-    borderRadius: 16,
     padding: 20,
     gap: 15,
   },
@@ -357,6 +354,7 @@ const styles = StyleSheet.create({
     flex: 1, // Ensure it expands within the gradient
     // justifyContent: "center",
     width: "100%",
+    alignItems: "center",
   },
   modalTitle: {
     marginBottom: 10,
@@ -366,18 +364,17 @@ const styles = StyleSheet.create({
   },
   modalInput: { marginBottom: 5, borderRadius: 50 },
   modalButtonRow: {
-    flexDirection: "row",
+    // flexDirection: "row",
     justifyContent: "center",
     marginTop: 15,
     // gap: 60, // Handled inline
   },
   modalButton: {
     // minWidth: 110, // Handled inline
-    borderRadius: 8,
+    borderRadius: 16,
   },
   spinner: {
-    alignSelf: "center",
-    color: "#000",
+    flexDirection: "row",
   },
   buttonLabel: {
     color: "#000",
@@ -402,14 +399,6 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     elevation: 1,
-  },
-  topbtn: {
-    // width: BUTTON_WIDTH, // Handled inline
-    // padding: 5,
-    // borderRadius: 30,
-    // zIndex: 1,
-    // height: 50,
-    // justifyContent: "center",
   },
   transparentButton: {
     backgroundColor: "transparent",

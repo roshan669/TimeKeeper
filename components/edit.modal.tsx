@@ -1,3 +1,4 @@
+import { styles as addModalStyles } from "@/app/add.modal";
 import { useCounterContext } from "@/context/counterContext";
 import { Counter } from "@/types/counter";
 import { LinearGradient } from "expo-linear-gradient";
@@ -66,15 +67,19 @@ export default function EditModal({
       <LinearGradient
         colors={["#FEC9CE", "#FF96A3"]}
         start={{ x: 1, y: 1 }}
-        end={{ x: 0, y: 1 }}
+        end={{ x: 0, y: 0 }}
         style={styles.modalContentWrapper}
       >
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"} // 'height' is often more reliable than 'position' for Android
+          behavior={Platform.OS === "ios" ? "padding" : undefined} // 'height' is often more reliable than 'position' for Android
           style={styles.keyboardAvoidingContainer}
         >
           <View style={styles.container}>
-            <Icon size={100} source={"clock-edit-outline"} />
+            <Text style={addModalStyles.modalTitle}>
+              <Icon source="pencil" size={26} color="#000" />
+              {"\t"}
+              EDIT COUNTER
+            </Text>
             <View style={{ width: "100%" }}>
               <Text
                 style={[styles.modalTitle, { color: "#000", marginTop: 20 }]}
@@ -82,25 +87,27 @@ export default function EditModal({
                 {cName}
               </Text>
               <TextInput
-                placeholder="New name here (optional)"
-                selectionColor="red"
+                placeholder="New name (optional)"
+                placeholderTextColor="#000"
+                textColor="#000"
                 onChangeText={setName}
                 underlineColor="#000"
                 activeUnderlineColor="#000"
-                placeholderTextColor="#000"
-                cursorColor="#000"
-                style={[{ backgroundColor: "" }]}
-                textColor="#000"
-                mode="outlined"
-                outlineStyle={{
-                  borderColor: "#000",
-                  borderRadius: 20,
-                  borderWidth: StyleSheet.hairlineWidth,
-                }}
+                mode="flat"
+                activeOutlineColor="#000"
+                style={[
+                  addModalStyles.modalInput,
+                  {
+                    width: "100%",
+                    backgroundColor: "transparent",
+                    fontSize: 16,
+                  },
+                ]}
               />
             </View>
 
             <DatePicker
+              theme="light"
               mode={"datetime"}
               date={date}
               onDateChange={setDate}
@@ -116,7 +123,7 @@ export default function EditModal({
                 onPress={() => onClose()}
               >
                 {/* <Icon source="cancel" size={35} color="black" /> */}
-                cancel
+                Cancel
               </Button>
               <Button
                 mode="elevated"
@@ -174,12 +181,12 @@ const styles = StyleSheet.create({
   modalTitle: {
     marginBottom: 25,
     textAlign: "center",
-    fontFamily: "Roboto-Bold",
+    fontFamily: "bung-ee",
     fontSize: 15,
   },
   modalButton: {
     minWidth: 110,
-    borderRadius: 8,
+    borderRadius: 16,
     backgroundColor: "#ff96a9",
   },
   buttonLabel: {
