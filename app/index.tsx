@@ -48,7 +48,8 @@ export default function Index() {
   const { themeMode } = useThemeContext();
   const { toggleTheme, setTheme } = useThemeContext();
   const theme = useTheme(); // Access theme colors
-  const { counters, setCounters, markCounterCompleted } = useCounterContext();
+  const { counters, setCounters, markCounterCompleted, deleteCounter } =
+    useCounterContext();
 
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [currentView, setCurrentView] = useState<"current" | "archive">(
@@ -194,15 +195,13 @@ export default function Index() {
             text: "Delete",
             style: "destructive",
             onPress: () => {
-              setCounters((prevCounters) =>
-                prevCounters.filter((counter) => counter.id !== id)
-              );
+              deleteCounter(id);
             },
           },
         ]
       );
     },
-    [counters, setCounters]
+    [counters, deleteCounter]
   );
 
   const handleArchiveToggle = useCallback(

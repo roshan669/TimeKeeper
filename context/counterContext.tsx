@@ -49,6 +49,7 @@ type CounterContextType = {
     > & { createdAt: number }
   ) => void;
   updateCounter: (id: string, updates: Partial<Counter>) => void;
+  deleteCounter: (id: string) => void;
   markCounterCompleted: (counterId: string) => void;
 };
 
@@ -57,6 +58,7 @@ const CounterContext = createContext<CounterContextType>({
   setCounters: () => console.warn("CounterProvider not used!"),
   addCounter: () => console.warn("CounterProvider not used!"),
   updateCounter: () => console.warn("CounterProvider not used!"),
+  deleteCounter: () => console.warn("CounterProvider not used!"),
   markCounterCompleted: () => console.warn("CounterProvider not used!"),
 });
 
@@ -321,15 +323,61 @@ export const CounterProvider = ({
     );
   }, []);
 
+  const deleteCounter = useCallback(
+    async (id: string) => {
+      const counterToDelete = counters.find((c) => c.id === id);
+      if (counterToDelete) {
+        // Cancel notifications if they exist
+        if (counterToDelete.notificationId) {
+          try {
+            await Notifications.cancelScheduledNotificationAsync(
+              counterToDelete.notificationId
+            );
+            console.log(
+              `Cancelled notification ${counterToDelete.notificationId}`
+            );
+          } catch (error) {
+            console.error("Error cancelling notification:", error);
+          }
+        }
+        if (counterToDelete.todayNotificationId) {
+          try {
+            await Notifications.cancelScheduledNotificationAsync(
+              counterToDelete.todayNotificationId
+            );
+            console.log(
+              `Cancelled today notification ${counterToDelete.todayNotificationId}`
+            );
+          } catch (error) {
+            console.error("Error cancelling today notification:", error);
+          }
+        }
+      }
+
+      setCounters((prevCounters) =>
+        prevCounters.filter((counter) => counter.id !== id)
+      );
+    },
+    [counters]
+  );
+
   const contextValue = useMemo(
     () => ({
       counters,
       setCounters,
       addCounter,
       updateCounter,
+      deleteCounter,
       markCounterCompleted,
     }),
-    [counters, setCounters, addCounter, updateCounter, markCounterCompleted]
+    [
+      counters,
+      setCounters,
+      addCounter,
+      updateCounter,
+      deleteCounter,
+      markCounterCompleted,
+    ]
   );
 
   // Splash screen while loading

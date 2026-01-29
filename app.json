@@ -20,7 +20,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.newArch.TimeKeeper",
+      "package": "com.newArch.timekeeper",
       "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
@@ -62,6 +62,15 @@
             "buildArchs": ["x86_64"],
             "useDayNightTheme": true
           }
+        }
+      ],
+      [
+        "./plugins/withAndroidSigning",
+        {
+          "storeFile": "play-store-upload-key.keystore",
+          "storePassword": "dhamiroshan@2003",
+          "keyAlias": "upload-key",
+          "keyPassword": "dhamiroshan@2003"
         }
       ],
       [
