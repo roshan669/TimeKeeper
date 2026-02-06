@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Install react-native-reanimated-carousel",
+			"type": "shell",
+			"command": "npm install react-native-reanimated-carousel",
+			"isBackground": false,
+			"group": "build"
+		}
+	]
+}

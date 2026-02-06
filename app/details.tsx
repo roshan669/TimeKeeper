@@ -1,17 +1,17 @@
-import EditModal from "@/components/edit.modal";
+import { useCounterContext } from "@/context/counterContext";
 import { useFonts } from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   useWindowDimensions,
 } from "react-native";
-import { Icon } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export interface data {
@@ -47,11 +47,15 @@ export default function Details() {
     type: string;
     completed: string;
   }>();
-  const createdAt = parseInt(Array.isArray(creation) ? creation[0] : creation);
+  const { updateCounter } = useCounterContext();
+  const initialCreatedAt = parseInt(
+    Array.isArray(creation) ? creation[0] : creation,
+  );
+  const [createdAt, setCreatedAt] = useState<number>(initialCreatedAt);
+  const counterId = Array.isArray(id) ? id[0] : id;
 
   const [calculated, setCalculated] = useState<data | undefined>();
   const intervalRef = useRef<NodeJS.Timeout | number | null>(null);
-  const [isVisible, setIsVisible] = useState<boolean>(false);
 
   const calculationsCountup = useCallback((creationTimestamp: number) => {
     const now = Date.now();
@@ -143,13 +147,36 @@ export default function Details() {
     );
   }
 
+  const onResetPress = () => {
+    Alert.alert(
+      "Reset Counter",
+      `Are you sure you want Reset "${
+        name || "this counter"
+      }"? This cannot be undone.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Reset",
+          style: "destructive",
+          onPress: () => {
+            const now = Date.now();
+            setCreatedAt(now);
+            if (counterId) {
+              updateCounter(counterId, { createdAt: now });
+            }
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <LinearGradient
       colors={
-        type === "countdown" ? ["#E0E0E0", "#4285F4"] : ["#FED0CE", "#FF9693"]
+        type === "countdown" ? ["#E0E0E0", "#4285F4"] : ["#FED0CE", "#FF96A1"]
       }
       start={{ x: 1, y: 1 }}
-      end={{ x: 0, y: 0 }}
+      end={{ x: 0.4, y: 0.5 }}
       style={styles.container}
     >
       <SafeAreaView style={styles.addgradient}>
@@ -297,26 +324,13 @@ export default function Details() {
         )}
 
         {type === "countup" && (
-          <>
-            <TouchableOpacity onPress={() => setIsVisible(true)}>
-              <View style={styles.btnTxtWrapper}>
-                <Icon source="pencil" size={normalize(18)} color="#000" />
-                <Text
-                  style={[styles.gradientText, { fontSize: normalize(15) }]}
-                >
-                  EDIT
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <EditModal
-              type={type}
-              isVisible={isVisible}
-              onClose={() => setIsVisible(false)}
-              id={id}
-              cName={name}
-              cDate={formattedCreatedAt}
-            />
-          </>
+          <TouchableOpacity onPress={onResetPress}>
+            <View style={styles.btnTxtWrapper}>
+              <Text style={[styles.gradientText, { fontSize: normalize(15) }]}>
+                Reset
+              </Text>
+            </View>
+          </TouchableOpacity>
         )}
       </SafeAreaView>
     </LinearGradient>

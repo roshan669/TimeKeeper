@@ -4,15 +4,17 @@ import {
   BackHandler,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
   useWindowDimensions,
 } from "react-native";
 import { Button, Icon, TextInput } from "react-native-paper";
 
+import FancyDatePicker from "@/components/FancyDatePicker";
 import { useCounterContext } from "@/context/counterContext";
 import { CounterType } from "@/types/counter";
+import { getMonthAsNum } from "@/types/date";
 import { useNavigation } from "expo-router"; // Import useNavigation from expo-router
-import DatePicker from "react-native-date-picker";
 import {
   Directions,
   Gesture,
@@ -36,8 +38,8 @@ export default function AddModalScreen() {
   const scale = Math.min(width / 375, height / 812);
   const normalize = (size: number) => Math.round(size * scale);
 
-  const BUTTON_WIDTH = normalize(120); // Slightly smaller for elegance
-  const BUTTON_GAP = normalize(50); // Closer gap
+  const BUTTON_WIDTH = normalize(135); // Slightly smaller for elegance
+  const BUTTON_GAP = normalize(70); // Closer gap
   const LEFT_POSITION = 0;
   const RIGHT_POSITION = BUTTON_WIDTH + BUTTON_GAP;
   const TOP_BAR_WIDTH = BUTTON_WIDTH * 2 + BUTTON_GAP;
@@ -46,6 +48,7 @@ export default function AddModalScreen() {
   const [type, setType] = useState<"countup" | "countdown">("countup"); // Default type
   const [date, setDate] = useState<Date>(new Date());
   const [error, setError] = useState<string>("");
+  const [showTimeExpanded, setShowTimeExpanded] = useState<boolean>(false);
 
   const { addCounter } = useCounterContext();
 
@@ -104,6 +107,46 @@ export default function AddModalScreen() {
     };
   });
 
+  const onDateChange = useCallback(
+    (date: {
+      day: string;
+      month: string;
+      year: string;
+      hour?: string;
+      minute?: string;
+      ampm?: string;
+    }) => {
+      setError(""); // Clear error on date change
+      const { day, month, year, hour, minute, ampm } = date;
+
+      let monthNum;
+      if (typeof month !== "number") {
+        monthNum = getMonthAsNum(month);
+      } else {
+        monthNum = parseInt(month);
+      }
+
+      // Convert 12-hour to 24-hour format
+      let hours24 = parseInt(hour || "12");
+      if (ampm === "PM" && hours24 !== 12) {
+        hours24 += 12;
+      } else if (ampm === "AM" && hours24 === 12) {
+        hours24 = 0;
+      }
+
+      const dateSelected = new Date(
+        parseInt(year),
+        monthNum!,
+        parseInt(day),
+        hours24,
+        parseInt(minute || "0"),
+      );
+      setDate(dateSelected);
+      // console.log("setDate:", dateSelected);
+    },
+    [],
+  );
+
   const handleAddCounter = () => {
     if (!newCounterName.trim()) {
       // This now catches "", " ", "   ", "\t\n", etc.
@@ -141,7 +184,7 @@ export default function AddModalScreen() {
       () => {
         onClose(); // Call your onClose logic
         return true; // Prevent default back button behavior
-      }
+      },
     );
     return () => backHandler.remove();
   }, [onClose]);
@@ -149,26 +192,32 @@ export default function AddModalScreen() {
   return (
     <LinearGradient
       colors={
-        type === "countdown" ? ["#E0E0E0", "#4285F4"] : ["#FFD9CE", "#FF76A3"]
+        type === "countdown" ? ["#a9a9a9", "#4285F4"] : ["#FEC9CE", "#FF96A1"]
       }
-      start={{ x: 1, y: 1 }}
-      end={{ x: 0, y: 0 }}
+      start={{ x: -1, y: 1 }}
+      end={{ x: 1, y: 1 }}
       // Apply modal styles here directly to the content wrapper
       style={[styles.addgradient, styles.modalContentWrapper]} // Add modalContentWrapper
     >
-      <View
+      {/* Back Button */}
+      <TouchableOpacity
+        onPress={onClose}
         style={{
-          flex: 0.2,
-          justifyContent: "flex-end",
+          position: "absolute",
+          top: normalize(25),
+          left: normalize(10),
+          zIndex: 10,
+          flexDirection: "row",
           alignItems: "center",
+          padding: normalize(8),
         }}
       >
         <Icon
-          source={"timer-sand-empty"}
-          size={normalize(80)}
-          color={"#E0E0E0"}
+          source="arrow-left"
+          size={normalize(24)}
+          color={type === "countdown" ? "#e0e0e0" : "#000"}
         />
-      </View>
+      </TouchableOpacity>
       <GestureDetector
         gesture={Gesture.Simultaneous(flingRightGesture, flingLeftGesture)}
       >
@@ -179,79 +228,108 @@ export default function AddModalScreen() {
               {
                 color: type === "countdown" ? "#e0e0e0" : "#000",
                 marginBottom: normalize(30),
-                fontSize: normalize(20),
+                fontSize: normalize(30),
               },
             ]}
           >
-            Add New Counter
+            Add Counter
           </Text>
-
           <View
-            style={[
-              styles.topBarContainer,
-              { width: TOP_BAR_WIDTH, gap: BUTTON_GAP },
-            ]}
+            style={{
+              backgroundColor: "#e5e5e560",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 5,
+              borderRadius: 15,
+              margin: 10,
+              // width: "100%",
+            }}
           >
-            <Animated.View
+            <View
               style={[
-                styles.sliderBackground,
-                animatedSliderStyle,
-                { width: BUTTON_WIDTH },
+                styles.topBarContainer,
+                { width: TOP_BAR_WIDTH, gap: BUTTON_GAP },
               ]}
-            />
-
-            <Button
-              labelStyle={[
-                styles.buttonLabel,
-                {
-                  fontSize: normalize(16),
-                  fontWeight: "bold",
-                  textAlignVertical: "center",
-                },
-              ]}
-              onPress={() => applyType(CounterType.COUNTUP)}
-              style={[styles.transparentButton, { width: BUTTON_WIDTH }]}
             >
-              Countup
-            </Button>
+              <Animated.View
+                style={[
+                  styles.sliderBackground,
+                  animatedSliderStyle,
+                  { width: BUTTON_WIDTH },
+                ]}
+              />
 
-            <Button
-              labelStyle={[
-                styles.buttonLabel,
-                {
-                  fontSize: normalize(16),
-                  fontWeight: "bold",
-                },
-              ]}
-              onPress={() => applyType(CounterType.COUNTDOWN)}
-              style={[styles.transparentButton, { width: BUTTON_WIDTH }]}
-            >
-              Countdown
-            </Button>
+              <Button
+                labelStyle={[
+                  styles.buttonLabel,
+                  {
+                    fontSize: normalize(16),
+                    // fontWeight: "bold",
+                    textAlignVertical: "center",
+                  },
+                ]}
+                onPress={() => applyType(CounterType.COUNTUP)}
+                style={[styles.transparentButton, { width: BUTTON_WIDTH }]}
+              >
+                Countup
+              </Button>
+
+              <Button
+                labelStyle={[
+                  styles.buttonLabel,
+                  {
+                    fontSize: normalize(16),
+                    // fontWeight: "bold",
+                    //  fontFamily: "bungee",
+                  },
+                ]}
+                onPress={() => applyType(CounterType.COUNTDOWN)}
+                style={[styles.transparentButton, { width: BUTTON_WIDTH }]}
+              >
+                Countdown
+              </Button>
+            </View>
           </View>
-
+          <View style={{ alignSelf: "flex-start" }}>
+            <Text
+              style={{
+                textAlign: "left",
+                fontFamily: "bungee",
+                fontSize: normalize(16),
+              }}
+            >
+              Counter Name
+            </Text>
+          </View>
           <TextInput
-            placeholder="Name"
-            placeholderTextColor="#000"
+            placeholder={
+              type === CounterType.COUNTDOWN ? "Birthday" : "Last Meeting"
+            }
+            placeholderTextColor="#626262cb"
             textColor="#000"
             onChangeText={setNewCounterName}
-            underlineColor="#000"
-            activeUnderlineColor="#000"
-            mode="flat"
+            // underlineColor="#000"
+            // activeUnderlineColor="#000"
+            mode="outlined"
             activeOutlineColor="#000"
+            outlineColor="#000"
+            outlineStyle={{
+              borderWidth: StyleSheet.hairlineWidth,
+              borderRadius: 15,
+            }}
             style={[
               styles.modalInput,
               {
-                width: "80%",
-                backgroundColor: "transparent",
-                fontSize: normalize(16),
+                width: "100%",
+                backgroundColor: "#e5e5e560",
+                fontSize: normalize(14),
               },
             ]}
           />
           {error.trim().length > 0 && (
             <Text
               style={{
-                fontSize: normalize(12),
+                fontSize: normalize(10),
                 color: "red",
                 textAlign: "center",
                 fontWeight: "bold",
@@ -262,30 +340,55 @@ export default function AddModalScreen() {
             </Text>
           )}
 
-          <View
+          <View style={{ alignSelf: "flex-start" }}>
+            <Text
+              style={{
+                textAlign: "left",
+                fontFamily: "bungee",
+                fontSize: normalize(16),
+              }}
+            >
+              Date & Time
+            </Text>
+          </View>
+          <FancyDatePicker
+            onDateChange={onDateChange}
+            showTime={showTimeExpanded}
+          />
+
+          {/* Time toggle button */}
+          <TouchableOpacity
+            onPress={() => setShowTimeExpanded(!showTimeExpanded)}
             style={{
-              marginVertical: normalize(20),
-              width: "100%",
+              flexDirection: "row",
               alignItems: "center",
+              paddingVertical: normalize(8),
+              paddingHorizontal: normalize(16),
+              marginTop: normalize(8),
+              backgroundColor: "#e5e5e560",
+              borderRadius: 15,
             }}
           >
-            <DatePicker
-              theme="light"
-              dividerColor="#000"
-              style={styles.spinner}
-              mode="datetime"
-              onDateChange={setDate}
-              date={date}
-              is24hourSource="device"
+            <Icon
+              source={showTimeExpanded ? "chevron-up" : "clock-outline"}
+              size={normalize(20)}
+              color="#000"
             />
-          </View>
+            <Text
+              style={{
+                marginLeft: normalize(8),
+                fontSize: normalize(10),
+                color: "#000",
+                // fontWeight: "500",
+                fontFamily: "bungee",
+              }}
+            >
+              {showTimeExpanded ? "Hide Time" : "Add Time"}
+            </Text>
+          </TouchableOpacity>
+          {/* </View> */}
 
-          <View
-            style={[
-              styles.modalButtonRow,
-              { gap: normalize(40), marginTop: normalize(15) },
-            ]}
-          >
+          <View style={[styles.modalButtonRow, { marginTop: normalize(35) }]}>
             <Button
               mode="elevated"
               onPress={handleAddCounter}
@@ -293,27 +396,16 @@ export default function AddModalScreen() {
                 styles.modalButton,
                 {
                   backgroundColor: "#E0E0E0",
-                  minWidth: normalize(200),
-                },
-              ]}
-              labelStyle={{ color: "#000", fontSize: normalize(15) }}
-            >
-              Add Counter
-            </Button>
-
-            <Button
-              mode="elevated"
-              onPress={onClose} // Use onClose to dismiss
-              style={[
-                styles.modalButton,
-                {
-                  backgroundColor: "#E0E0E0",
                   minWidth: normalize(250),
                 },
               ]}
-              labelStyle={{ color: "#000", fontSize: normalize(15) }}
+              labelStyle={{
+                color: "#000",
+                fontSize: normalize(15),
+                fontFamily: "bungee",
+              }}
             >
-              Cancel
+              Add Counter
             </Button>
           </View>
           {/* <Link
@@ -342,6 +434,7 @@ export const styles = StyleSheet.create({
     width: "100%", // Will take 100% of `modalContentWrapper`'s width
     padding: 20,
     gap: 15,
+    // alignItems: "center",
   },
   modalContentWrapper: {
     flex: 1, // This outer wrapper expands to fill the entire screen, allowing for centering
@@ -352,14 +445,14 @@ export const styles = StyleSheet.create({
   innerContentContainer: {
     // This is now your actual modal content, without the gradient
     flex: 1, // Ensure it expands within the gradient
-    // justifyContent: "center",
+    justifyContent: "center",
     width: "100%",
     alignItems: "center",
   },
   modalTitle: {
     marginBottom: 10,
     textAlign: "center",
-    fontFamily: "Roboto-Bold",
+    fontFamily: "bungee",
     fontSize: 15,
   },
   modalInput: { marginBottom: 5, borderRadius: 50 },
@@ -371,7 +464,8 @@ export const styles = StyleSheet.create({
   },
   modalButton: {
     // minWidth: 110, // Handled inline
-    borderRadius: 16,
+
+    borderRadius: 15,
   },
   spinner: {
     flexDirection: "row",
@@ -379,16 +473,20 @@ export const styles = StyleSheet.create({
   buttonLabel: {
     color: "#000",
     fontSize: 15,
+    fontFamily: "bungee",
   },
   topBarContainer: {
     flexDirection: "row",
     // width: TOP_BAR_WIDTH, // Handled inline
+    verticalAlign: "middle",
+
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 25,
-    // gap: BUTTON_GAP, // Handled inline
+    // marginBottom: 25,
+
+    borderRadius: 15,
     position: "relative",
-    alignSelf: "center",
+    // alignSelf: "center",
   },
   sliderBackground: {
     position: "absolute",
@@ -398,7 +496,7 @@ export const styles = StyleSheet.create({
     borderRadius: 15,
     left: 0,
     top: 0,
-    elevation: 1,
+    elevation: 2,
   },
   transparentButton: {
     backgroundColor: "transparent",

@@ -39,7 +39,7 @@ const STORAGE_KEY = "@days_since_app_data_v2"; // Use versioned key
 type themeModeType = "light" | "dark" | "system";
 
 const BUTTON_WIDTH = 120;
-const BUTTON_GAP = 80;
+const BUTTON_GAP = 90;
 const LEFT_POSITION = 0;
 const RIGHT_POSITION = BUTTON_WIDTH + BUTTON_GAP;
 const TOP_BAR_WIDTH = BUTTON_WIDTH * 2 + BUTTON_GAP;
@@ -53,7 +53,7 @@ export default function Index() {
 
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [currentView, setCurrentView] = useState<"current" | "archive">(
-    "current"
+    "current",
   );
 
   const router = useRouter(); // Initialize router
@@ -116,7 +116,7 @@ export default function Index() {
               completed: c.completed || false,
               notificationId: c.notificationId,
               todayNotificationId: c.todayNotificationId,
-            })
+            }),
           );
           setCounters(correctedCounters);
         }
@@ -177,7 +177,7 @@ export default function Index() {
   // --- Filtered Counters for Display ---
   const displayedCounters = useMemo(() => {
     return counters.filter((c) =>
-      currentView === "current" ? !c.isArchived : c.isArchived
+      currentView === "current" ? !c.isArchived : c.isArchived,
     );
   }, [counters, currentView]);
 
@@ -198,10 +198,10 @@ export default function Index() {
               deleteCounter(id);
             },
           },
-        ]
+        ],
       );
     },
-    [counters, deleteCounter]
+    [counters, deleteCounter],
   );
 
   const handleArchiveToggle = useCallback(
@@ -214,17 +214,17 @@ export default function Index() {
         prevCounters.map((counter) =>
           counter.id === id
             ? { ...counter, isArchived: nextIsArchived }
-            : counter
-        )
+            : counter,
+        ),
       );
       ToastAndroid.show(
         `"${targetCounter.name}" moved to ${
           nextIsArchived ? "Past" : "Current"
         }.`,
-        1000
+        1000,
       );
     },
-    [counters, setCounters]
+    [counters, setCounters],
   );
 
   const handleComplete = useCallback(
@@ -235,7 +235,7 @@ export default function Index() {
       markCounterCompleted(id);
       ToastAndroid.show(`"${targetCounter.name}" moved to ${"Past"}.`, 1000);
     },
-    [counters, markCounterCompleted]
+    [counters, markCounterCompleted],
   );
 
   // --- Render Item for FlatList ---
@@ -250,7 +250,7 @@ export default function Index() {
         />
       );
     },
-    [handleDeleteCounter, handleArchiveToggle, handleComplete]
+    [handleDeleteCounter, handleArchiveToggle, handleComplete],
   );
 
   // --- Main Render ---
@@ -325,6 +325,7 @@ export default function Index() {
       <View style={styles.segmentContainer}>
         <Animated.View style={[styles.sliderBackground, animatedSliderStyle]} />
         <Button
+          rippleColor={"#00000000"}
           labelStyle={[
             styles.buttonLabel,
             {
@@ -344,6 +345,7 @@ export default function Index() {
         </Button>
 
         <Button
+          rippleColor={"#00000000"}
           labelStyle={[
             styles.buttonLabel,
             {
