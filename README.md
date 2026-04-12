@@ -1,8 +1,13 @@
 # Timekeeper
 
-[PlayStore ⬇️](https://play.google.com/store/apps/details?id=com.newArch.timekeeper)
+[![Download Apk](https://custom-icon-badges.demolab.com/badge/-Download_From_PlayStore-black?style=for-the-badge&logo=download&logoColor=white)](https://play.google.com/store/apps/details?id=com.newArch.timekeeper)
 
-[Download ⬇️](https://github.com/roshan669/TimeKeeper/releases/download/timekeeper/timeKeeper.apk)
+## Download APK ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/roshan669/TimeKeeper/total?link=https%3A%2F%2Fgithub.com%2Froshan669%2FTimeKeeper%2Freleases&label=Github%20Downloads)
+
+
+[![Download Apk](https://custom-icon-badges.demolab.com/badge/-Download_From_Github-black?style=for-the-badge&logo=download&logoColor=white)](https://github.com/roshan669/TimeKeeper/releases/latest)
+
+[![Download Apk](https://custom-icon-badges.demolab.com/badge/-Download_Instantly-black?style=for-the-badge&logo=download&logoColor=white)](https://github.com/roshan669/TimeKeeper/releases/download/timekeeper/timeKeeper.apk)
 
 <img src="https://github.com/user-attachments/assets/e935c9ed-6073-4994-ab1e-b37e78f6aa75" width="150" height="150">
 
@@ -17,6 +22,4 @@
 <img src="https://github.com/roshan669/TimeKeeper/blob/master/assets/ss6.jpg?raw=true" height="250" alt="TimeKeeper Screenshot 1" style=" border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); flex-shrink: 0;"/>
 </div>
 
-### Download the latest version from playStore
-
-[Download](https://play.google.com/store/apps/details?id=com.newArch.timekeeper)
+[![Download Apk](https://custom-icon-badges.demolab.com/badge/-Download_From_PlayStore-black?style=for-the-badge&logo=download&logoColor=white)](https://play.google.com/store/apps/details?id=com.newArch.timekeeper)
