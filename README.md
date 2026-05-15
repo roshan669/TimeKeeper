@@ -2,12 +2,12 @@
 
 [![Download Apk](https://custom-icon-badges.demolab.com/badge/-Download_From_PlayStore-black?style=for-the-badge&logo=download&logoColor=white)](https://play.google.com/store/apps/details?id=com.newArch.timekeeper)
 
-## Download APK ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/roshan669/TimeKeeper/total?link=https%3A%2F%2Fgithub.com%2Froshan669%2FTimeKeeper%2Freleases&label=Github%20Downloads)
+## Download APK ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/roshang1t/TimeKeeper/total?link=https%3A%2F%2Fgithub.com%2Froshang1t%2FTimeKeeper%2Freleases&label=Github%20Downloads)
 
 
-[![Download Apk](https://custom-icon-badges.demolab.com/badge/-Download_From_Github-black?style=for-the-badge&logo=download&logoColor=white)](https://github.com/roshan669/TimeKeeper/releases/latest)
+[![Download Apk](https://custom-icon-badges.demolab.com/badge/-Download_From_Github-black?style=for-the-badge&logo=download&logoColor=white)](https://github.com/roshang1t/TimeKeeper/releases/latest)
 
-[![Download Apk](https://custom-icon-badges.demolab.com/badge/-Download_Instantly-black?style=for-the-badge&logo=download&logoColor=white)](https://github.com/roshan669/TimeKeeper/releases/download/timekeeper/timeKeeper.apk)
+[![Download Apk](https://custom-icon-badges.demolab.com/badge/-Download_Instantly-black?style=for-the-badge&logo=download&logoColor=white)](https://github.com/roshang1t/TimeKeeper/releases/download/timekeeper/timeKeeper.apk)
 
 <img src="https://github.com/user-attachments/assets/e935c9ed-6073-4994-ab1e-b37e78f6aa75" width="150" height="150">
 
@@ -16,10 +16,10 @@
 ## Screenshots
 
 <div style="display:flex; justify-content:center; gap: 10px; overflow-x: auto; padding-bottom: 10px;">
-<img src="https://github.com/roshan669/TimeKeeper/blob/master/assets/ss2.jpg?raw=true" height="250" alt="TimeKeeper Screenshot 1" style=" border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); flex-shrink: 0;"/>
-<img src="https://github.com/roshan669/TimeKeeper/blob/master/assets/ss3.jpg?raw=true" height="250" alt="TimeKeeper Screenshot 1" style=" border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); flex-shrink: 0;"/>
-<img src="https://github.com/roshan669/TimeKeeper/blob/master/assets/ss5.jpg?raw=true" height="250" alt="TimeKeeper Screenshot 1" style=" border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); flex-shrink: 0;"/>
-<img src="https://github.com/roshan669/TimeKeeper/blob/master/assets/ss6.jpg?raw=true" height="250" alt="TimeKeeper Screenshot 1" style=" border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); flex-shrink: 0;"/>
+<img src="https://github.com/roshang1t/TimeKeeper/blob/master/assets/ss2.jpg?raw=true" height="250" alt="TimeKeeper Screenshot 1" style=" border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); flex-shrink: 0;"/>
+<img src="https://github.com/roshang1t/TimeKeeper/blob/master/assets/ss3.jpg?raw=true" height="250" alt="TimeKeeper Screenshot 1" style=" border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); flex-shrink: 0;"/>
+<img src="https://github.com/roshang1t/TimeKeeper/blob/master/assets/ss5.jpg?raw=true" height="250" alt="TimeKeeper Screenshot 1" style=" border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); flex-shrink: 0;"/>
+<img src="https://github.com/roshang1t/TimeKeeper/blob/master/assets/ss6.jpg?raw=true" height="250" alt="TimeKeeper Screenshot 1" style=" border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); flex-shrink: 0;"/>
 </div>
 
 [![Download Apk](https://custom-icon-badges.demolab.com/badge/-Download_From_PlayStore-black?style=for-the-badge&logo=download&logoColor=white)](https://play.google.com/store/apps/details?id=com.newArch.timekeeper)
