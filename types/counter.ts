@@ -1,3 +1,6 @@
+// --- Recurrence Type ---
+export type Recurrence = "none" | "daily" | "weekly" | "monthly" | "yearly" | "custom";
+
 // --- Counter Interface ---
 export interface Counter {
   id: string;
@@ -9,6 +12,9 @@ export interface Counter {
   completed: boolean;
   notificationId: string | undefined;
   todayNotificationId?: string;
+  recurrence: Recurrence;
+  customRecurrenceDays?: number;
+  nextRecurrenceDate?: number;
 }
 
 export enum CounterType {

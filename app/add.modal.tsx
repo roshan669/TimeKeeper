@@ -12,7 +12,7 @@ import { Button, Icon, TextInput } from "react-native-paper";
 
 import FancyDatePicker from "@/components/FancyDatePicker";
 import { useCounterContext } from "@/context/counterContext";
-import { CounterType } from "@/types/counter";
+import { CounterType, Recurrence } from "@/types/counter";
 import { getMonthAsNum } from "@/types/date";
 import { useNavigation } from "expo-router"; // Import useNavigation from expo-router
 import {
@@ -49,6 +49,10 @@ export default function AddModalScreen() {
   const [date, setDate] = useState<Date>(new Date());
   const [error, setError] = useState<string>("");
   const [showTimeExpanded, setShowTimeExpanded] = useState<boolean>(false);
+  const [recurrence, setRecurrence] = useState<Recurrence>("none");
+  const [customDays, setCustomDays] = useState<string>("");
+  const [showRecurrencePicker, setShowRecurrencePicker] =
+    useState<boolean>(false);
 
   const { addCounter } = useCounterContext();
 
@@ -165,8 +169,14 @@ export default function AddModalScreen() {
 
     addCounter({
       name: newCounterName.trim(),
-      createdAt: date ? date.getTime() : Date.now(), // Use selected date or current time
+
+      createdAt: date ? date.getTime() : Date.now(),
       type: type,
+      recurrence: type === "countdown" ? recurrence : "none",
+      customRecurrenceDays:
+        type === "countdown" && recurrence === "custom"
+          ? parseInt(customDays) || undefined
+          : undefined,
     });
     // After adding, dismiss the modal
     navigation.goBack();
@@ -388,6 +398,209 @@ export default function AddModalScreen() {
           </TouchableOpacity>
           {/* </View> */}
 
+          {/* Recurrence Picker - only show for countdown */}
+          {type === "countdown" && (
+            <View style={{ width: "100%", marginTop: normalize(12) }}>
+              {/* Trigger Button */}
+              <TouchableOpacity
+                onPress={() => setShowRecurrencePicker(!showRecurrencePicker)}
+                style={[
+                  styles.recurrenceTrigger,
+                  recurrence !== "none" && styles.recurrenceTriggerActive,
+                ]}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    flex: 1,
+                  }}
+                >
+                  <View
+                    style={[
+                      styles.recurrenceTriggerIcon,
+                      recurrence !== "none" &&
+                        styles.recurrenceTriggerIconActive,
+                    ]}
+                  >
+                    <Icon
+                      source="repeat"
+                      size={normalize(16)}
+                      color={recurrence !== "none" ? "#fff" : "#666"}
+                    />
+                  </View>
+                  <View style={{ marginLeft: normalize(12), flex: 1 }}>
+                    <Text
+                      style={[
+                        styles.recurrenceTriggerLabel,
+                        { fontSize: normalize(9) },
+                      ]}
+                    >
+                      REPEATS
+                    </Text>
+                    <Text
+                      style={[
+                        styles.recurrenceTriggerValue,
+                        { fontSize: normalize(13) },
+                      ]}
+                    >
+                      {recurrence === "none"
+                        ? "Does not repeat"
+                        : recurrence === "custom"
+                          ? `Every ${customDays || "X"} days`
+                          : recurrence.charAt(0).toUpperCase() +
+                            recurrence.slice(1)}
+                    </Text>
+                  </View>
+                </View>
+                <Icon
+                  source={showRecurrencePicker ? "chevron-up" : "chevron-down"}
+                  size={normalize(20)}
+                  color={recurrence !== "none" ? "#fff" : "#666"}
+                />
+              </TouchableOpacity>
+
+              {/* Options Panel */}
+              {showRecurrencePicker && (
+                <View style={styles.recurrencePanel}>
+                  {(
+                    [
+                      "none",
+                      "daily",
+                      "weekly",
+                      "monthly",
+                      "yearly",
+                      "custom",
+                    ] as Recurrence[]
+                  ).map((option) => {
+                    const icons: Record<Recurrence, string> = {
+                      none: "close-circle-outline",
+                      daily: "calendar-today",
+                      weekly: "calendar-week",
+                      monthly: "calendar-month",
+                      yearly: "cake-variant",
+                      custom: "calendar-edit",
+                    };
+                    const labels: Record<Recurrence, string> = {
+                      none: "Does not repeat",
+                      daily: "Daily",
+                      weekly: "Weekly",
+                      monthly: "Monthly",
+                      yearly: "Yearly",
+                      custom: "Custom",
+                    };
+                    const descriptions: Record<Recurrence, string> = {
+                      none: "One-time event",
+                      daily: "Every day",
+                      weekly: "Every 7 days",
+                      monthly: "Every month",
+                      yearly: "Every year",
+                      custom: "Set custom interval",
+                    };
+                    const isSelected = recurrence === option;
+
+                    return (
+                      <TouchableOpacity
+                        key={option}
+                        onPress={() => {
+                          setRecurrence(option);
+                          if (option !== "custom") {
+                            setShowRecurrencePicker(false);
+                          }
+                        }}
+                        style={[
+                          styles.recurrenceOptionModern,
+                          isSelected && styles.recurrenceOptionModernActive,
+                        ]}
+                      >
+                        <View
+                          style={[
+                            styles.recurrenceOptionIconWrapper,
+                            isSelected &&
+                              styles.recurrenceOptionIconWrapperActive,
+                          ]}
+                        >
+                          <Icon
+                            source={icons[option]}
+                            size={normalize(18)}
+                            color={isSelected ? "#fff" : "#666"}
+                          />
+                        </View>
+                        <View style={{ marginLeft: normalize(12), flex: 1 }}>
+                          <Text
+                            style={[
+                              styles.recurrenceOptionLabelModern,
+                              { fontSize: normalize(13) },
+                              isSelected &&
+                                styles.recurrenceOptionLabelModernActive,
+                            ]}
+                          >
+                            {labels[option]}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.recurrenceOptionDescModern,
+                              { fontSize: normalize(9) },
+                              isSelected &&
+                                styles.recurrenceOptionDescModernActive,
+                            ]}
+                          >
+                            {descriptions[option]}
+                          </Text>
+                        </View>
+                        {isSelected && (
+                          <Icon
+                            source="check"
+                            size={normalize(18)}
+                            color="#fff"
+                          />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+
+                  {/* Custom days input */}
+                  {recurrence === "custom" && (
+                    <View style={styles.customDaysRowModern}>
+                      <Text
+                        style={[
+                          styles.customDaysLabel,
+                          { fontSize: normalize(12) },
+                        ]}
+                      >
+                        Repeat every
+                      </Text>
+                      <TextInput
+                        placeholder="14"
+                        placeholderTextColor="#999"
+                        textColor="#000"
+                        keyboardType="numeric"
+                        value={customDays}
+                        onChangeText={setCustomDays}
+                        mode="outlined"
+                        activeOutlineColor="#4285F4"
+                        outlineColor="#ddd"
+                        outlineStyle={{
+                          borderWidth: 1.5,
+                          borderRadius: 12,
+                        }}
+                        style={styles.customDaysInput}
+                      />
+                      <Text
+                        style={[
+                          styles.customDaysLabel,
+                          { fontSize: normalize(12) },
+                        ]}
+                      >
+                        days
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              )}
+            </View>
+          )}
+
           <View style={[styles.modalButtonRow, { marginTop: normalize(35) }]}>
             <Button
               mode="elevated"
@@ -505,5 +718,104 @@ export const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 10,
     fontFamily: "Roboto-Bold",
+  },
+  recurrenceTrigger: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: normalize(16),
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(0, 0, 0, 0.1)",
+  },
+  recurrenceTriggerActive: {
+    backgroundColor: "#4285F4",
+    borderColor: "#4285F4",
+  },
+  recurrenceTriggerIcon: {
+    width: normalize(36),
+    height: normalize(36),
+    borderRadius: normalize(18),
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  recurrenceTriggerIconActive: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+  },
+  recurrenceTriggerLabel: {
+    fontFamily: "Roboto-Regular",
+    color: "#666",
+    fontSize: normalize(10),
+    marginBottom: 2,
+  },
+  recurrenceTriggerValue: {
+    fontFamily: "Roboto-Bold",
+    color: "#000",
+    fontSize: normalize(14),
+  },
+  recurrencePanel: {
+    marginTop: normalize(8),
+    backgroundColor: "rgba(255, 255, 255, 0.12)",
+    borderRadius: 12,
+    padding: normalize(8),
+  },
+  recurrenceOptionModern: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: normalize(12),
+    paddingHorizontal: normalize(12),
+    borderRadius: 10,
+    marginBottom: normalize(4),
+  },
+  recurrenceOptionModernActive: {
+    backgroundColor: "#4285F4",
+  },
+  recurrenceOptionIconWrapper: {
+    width: normalize(32),
+    height: normalize(32),
+    borderRadius: normalize(16),
+    backgroundColor: "rgba(0, 0, 0, 0.08)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  recurrenceOptionIconWrapperActive: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+  },
+  recurrenceOptionLabelModern: {
+    fontFamily: "Roboto-Bold",
+    color: "#000",
+    fontSize: normalize(13),
+  },
+  recurrenceOptionLabelModernActive: {
+    color: "#fff",
+  },
+  recurrenceOptionDescModern: {
+    fontFamily: "Roboto-Regular",
+    color: "#666",
+    fontSize: normalize(10),
+    marginTop: 2,
+  },
+  recurrenceOptionDescModernActive: {
+    color: "rgba(255, 255, 255, 0.85)",
+  },
+  customDaysRowModern: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: normalize(12),
+    paddingHorizontal: normalize(12),
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0, 0, 0, 0.08)",
+    marginTop: normalize(8),
+  },
+  customDaysLabel: {
+    fontFamily: "Roboto-Regular",
+    color: "#000",
+  },
+  customDaysInput: {
+    width: normalize(60),
+    height: normalize(36),
+    paddingHorizontal: normalize(12),
   },
 });
