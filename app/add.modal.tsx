@@ -579,7 +579,7 @@ export default function AddModalScreen() {
                       <TextInput
                         placeholder="14"
                         placeholderTextColor="#999"
-                        textColor="#000"
+                        textColor="#eaeaf3"
                         keyboardType="numeric"
                         value={customDays}
                         onChangeText={setCustomDays}
@@ -823,7 +823,7 @@ export const styles = StyleSheet.create({
   },
   customDaysLabel: {
     fontFamily: "Roboto-Regular",
-    color: "#000",
+    color: "#050505",
   },
   customDaysInput: {
     width: 60,
