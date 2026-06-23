@@ -1,17 +1,9 @@
-import { useTick } from "@/context/TickContext";
 import { Counter } from "@/types/counter";
-import { format } from "date-fns";
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { memo } from "react";
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { IconButton, useTheme } from "react-native-paper";
+import React, { memo, useMemo } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type CounterItemProps = {
   item: Counter;
@@ -20,226 +12,171 @@ type CounterItemProps = {
   handleComplete: (id: string) => void;
 };
 
-const CounterItem = ({
+const getTimeParts = (item: Counter) => {
+  const now = Date.now();
+  const diff =
+    item.type === "countdown"
+      ? Math.max(0, item.createdAt - now)
+      : Math.max(0, now - item.createdAt);
+
+  const totalSeconds = Math.floor(diff / 1000);
+  const totalMinutes = Math.floor(totalSeconds / 60);
+  const totalHours = Math.floor(totalMinutes / 60);
+  const totalDays = Math.floor(totalHours / 24);
+
+  if (totalDays > 0) {
+    return {
+      value: String(totalDays),
+      label:
+        item.type === "countdown"
+          ? totalDays === 1
+            ? "day to"
+            : "days to"
+          : totalDays === 1
+            ? "day since"
+            : "days since",
+    };
+  }
+
+  if (totalHours > 0) {
+    return {
+      value: String(totalHours),
+      label: item.type === "countdown" ? "hours to" : "hours since",
+    };
+  }
+
+  if (totalMinutes > 0) {
+    return {
+      value: String(totalMinutes),
+      label: item.type === "countdown" ? "minutes to" : "minutes since",
+    };
+  }
+
+  return {
+    value: String(totalSeconds),
+    label: item.type === "countdown" ? "seconds to" : "seconds since",
+  };
+};
+
+function CounterItem({
   item,
   handleDeleteCounter,
   handleArchiveToggle,
   handleComplete,
-}: CounterItemProps) => {
-  const theme = useTheme();
+}: CounterItemProps) {
   const router = useRouter();
-  const tick = useTick(); // Subscribe to tick to force re-render
+  const { value, label } = getTimeParts(item);
 
-  const calculateCountup = (elapsedMs: number, baseStyle: StyleProp<any>) => {
-    const totalSeconds = Math.floor(elapsedMs / 1000);
-    const totalMinutes = Math.floor(totalSeconds / 60);
-    const totalHours = Math.floor(totalMinutes / 60);
-    const totalDays = Math.floor(totalHours / 24);
+  const formattedDate = useMemo(
+    () =>
+      new Date(item.createdAt).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+    [item.createdAt],
+  );
 
-    let displayValue: string | number;
-    let displayLabel: string;
-    let isDaysView = false;
-
-    if (totalDays > 0) {
-      displayValue = totalDays;
-      displayLabel = totalDays === 1 ? "DAY SINCE" : "DAYS SINCE";
-      isDaysView = true;
-      baseStyle = styles.daysNumber;
-    } else if (totalHours >= 1) {
-      displayValue = totalHours;
-      displayLabel = "HOURS SINCE";
-    } else if (totalMinutes >= 1) {
-      displayValue = totalMinutes;
-      displayLabel = "MINUTES SINCE";
-    } else {
-      displayValue = totalSeconds;
-      displayLabel = "SECONDS SINCE";
-    }
-
-    return {
-      displayLabel,
-      displayValue,
-      isDaysView,
-      remainingSeconds: 1, // Placeholder for countup
-    };
-  };
-
-  const calculateCountdown = (
-    forthcommingMs: number,
-    baseStyle: StyleProp<any>
-  ) => {
-    const remainingSeconds = Math.floor(forthcommingMs / 1000);
-    const remainingMinutes = Math.floor(remainingSeconds / 60);
-    const remainingHours = Math.floor(remainingMinutes / 60);
-    const remainingDays = Math.floor(remainingHours / 24);
-
-    let displayValue: string | number;
-    let displayLabel: string;
-    let isDaysView = false;
-
-    if (remainingDays > 0) {
-      displayValue = remainingDays;
-      displayLabel = remainingDays === 1 ? "DAY TO" : "DAYS TO";
-      isDaysView = true;
-      baseStyle = styles.daysNumber;
-    } else if (remainingHours >= 1) {
-      displayValue = remainingHours;
-      displayLabel = "HOURS TO";
-    } else if (remainingMinutes >= 1) {
-      displayValue = remainingMinutes;
-      displayLabel = "MINUTES TO";
-    } else {
-      displayValue = remainingSeconds;
-      displayLabel = "SECONDS TO";
-    }
-
-    return {
-      displayLabel,
-      displayValue,
-      isDaysView,
-      remainingSeconds,
-    };
-  };
-
-  const now = Date.now();
-  const elapsedMs = Math.max(0, now - item.createdAt);
-  const forthcommingMs = Math.max(0, item.createdAt - now);
-
-  let baseStyle = styles.hoursMinutesSecondsNumber; // Default to H/M/S style
-
-  const { displayLabel, displayValue, isDaysView, remainingSeconds } =
+  const gradientColors =
     item.type === "countdown"
-      ? calculateCountdown(forthcommingMs, baseStyle)
-      : calculateCountup(elapsedMs, baseStyle);
+      ? (["#E0E0E0", "#4285F4"] as const)
+      : (["#FEC9CE", "#FF96A1"] as const);
 
-  const formattedDate = format(new Date(item.createdAt), "MMM dd, yyyy");
-
-  if (item.type === "countdown" && remainingSeconds <= 0 && !item.completed) {
-    setTimeout(() => {
-      handleComplete(item.id);
-    }, 0);
-  }
+  const openDetails = () => {
+    router.push({
+      pathname: "/details",
+      params: {
+        id: item.id,
+        name: item.name,
+        creation: String(item.createdAt),
+        type: item.type,
+        completed: String(item.completed),
+      },
+    });
+  };
 
   return (
     <TouchableOpacity
-      onPress={() => {
-        router.push({
-          pathname: "/details",
-          params: {
-            creation: item.createdAt.toString(),
-            name: item.name,
-            id: item.id.toString(),
-            type: item.type.toString(),
-            completed: item.completed.toString(),
-          },
-        });
-      }}
-      onLongPress={() => handleArchiveToggle(item.id)}
-      delayLongPress={1000}
+      activeOpacity={0.85}
+      onPress={openDetails}
+      style={styles.cardContainer}
     >
-      <View style={styles.cardContainer}>
-        <LinearGradient
-          colors={
-            item.type === "countdown"
-              ? ["#E0E0E0", "#4285F4"]
-              : ["#FEC9CE", "#FF96A1"]
-          }
-          start={{ x: 1, y: 1 }}
-          end={{ x: 0, y: 0 }}
-          style={styles.gradient}
-        >
-          {!item.completed ? (
-            <View style={styles.cardContent}>
-              {/* Left Side */}
-              <View style={styles.leftColumn}>
-                <Text
-                  style={[baseStyle]}
-                  key={
-                    !isDaysView && !item.isArchived
-                      ? `time-${tick}`
-                      : `static-${item.id}`
-                  }
-                >
-                  {displayValue}
-                </Text>
-                <Text style={styles.daysLabel}>{displayLabel}</Text>
-              </View>
-
-              {/* Right Side */}
-              <View style={styles.rightColumn}>
-                <Text style={styles.dateText}>{formattedDate}</Text>
-                <Text
-                  style={styles.nameText}
-                  numberOfLines={2}
-                  ellipsizeMode="tail"
-                >
-                  {item.name}
-                </Text>
-              </View>
-
-              {/* Optional: Notification Bell Icon */}
-              {item.hasNotification && (
-                <IconButton
-                  icon="bell-outline"
-                  size={18}
-                  style={styles.notificationIcon}
-                  iconColor={"rgba(0, 0, 0, 0.6)"}
-                />
-              )}
-
-              {/* Trash Icon */}
-              <IconButton
-                icon="delete-outline"
-                size={20}
-                onPress={() => handleDeleteCounter(item.id)}
-                iconColor={theme.colors.onPrimary}
-                style={styles.deleteIcon}
-              />
-            </View>
-          ) : (
-            <View
+      <LinearGradient
+        colors={gradientColors}
+        start={{ x: 1, y: 1 }}
+        end={{ x: 0.4, y: 0.5 }}
+        style={styles.gradient}
+      >
+        <View style={styles.cardContent}>
+          <View style={styles.leftColumn}>
+            <Text
               style={[
-                styles.cardContent,
-                {
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  justifyContent: "center",
-                  maxHeight: 120,
-                  paddingVertical: 0,
-                },
+                styles.valueText,
+                value.length > 3 && styles.compactValueText,
               ]}
+              numberOfLines={1}
             >
-              <Text
-                style={[
-                  styles.hoursMinutesSecondsNumber,
-                  {
-                    fontSize: 40,
-                    lineHeight: 50,
-                    textDecorationLine: "line-through",
-                  },
-                ]}
-              >
-                {item.name.substring(0, 10)}
-              </Text>
-              <IconButton
-                icon="delete-outline"
-                size={20}
-                onPress={() => handleDeleteCounter(item.id)}
-                iconColor={theme.colors.onPrimary}
-                style={styles.deleteIcon}
-              />
-              <Text
-                style={[styles.hoursMinutesSecondsNumber, { fontSize: 30 }]}
-              >
-                completed
-              </Text>
-            </View>
+              {value}
+            </Text>
+            <Text style={styles.labelText}>{label}</Text>
+          </View>
+
+          <View style={styles.rightColumn}>
+            <Text style={styles.dateText}>{formattedDate}</Text>
+            <Text style={styles.nameText} numberOfLines={2}>
+              {item.name}
+            </Text>
+          </View>
+
+          {item.hasNotification && (
+            <Ionicons
+              name="notifications"
+              size={18}
+              color="#000"
+              style={styles.notificationIcon}
+            />
           )}
-        </LinearGradient>
-      </View>
+
+          <TouchableOpacity
+            accessibilityLabel="Delete counter"
+            onPress={() => handleDeleteCounter(item.id)}
+            style={styles.deleteIcon}
+          >
+            <Ionicons name="trash-outline" size={20} color="#000" />
+          </TouchableOpacity>
+
+          {!item.completed && item.type === "countdown" && (
+            <TouchableOpacity
+              accessibilityLabel="Complete counter"
+              onPress={() => handleComplete(item.id)}
+              style={styles.completeIcon}
+            >
+              <Ionicons name="checkmark-circle-outline" size={21} color="#000" />
+            </TouchableOpacity>
+          )}
+
+          {!item.completed && (
+            <TouchableOpacity
+              accessibilityLabel={
+                item.isArchived ? "Move counter to current" : "Archive counter"
+              }
+              onPress={() => handleArchiveToggle(item.id)}
+              style={styles.archiveIcon}
+            >
+              <Ionicons
+                name={item.isArchived ? "archive" : "archive-outline"}
+                size={20}
+                color="#000"
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+      </LinearGradient>
     </TouchableOpacity>
   );
-};
+}
+
+export default memo(CounterItem);
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -251,45 +188,39 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   cardContent: {
+    minHeight: 130,
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 15,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     position: "relative",
   },
   leftColumn: {
-    flex: 1,
+    width: 138,
     alignItems: "center",
     justifyContent: "center",
-    maxWidth: 145,
   },
   rightColumn: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "baseline",
-    marginBottom: 30,
+    alignItems: "flex-start",
+    paddingRight: 70,
   },
-  daysNumber: {
+  valueText: {
     fontSize: 55,
     fontFamily: "bung-ee",
     color: "#000",
-    lineHeight: 70,
+    lineHeight: 68,
     textAlign: "center",
   },
-  hoursMinutesSecondsNumber: {
-    fontSize: 55,
-    fontFamily: "bung-ee",
-    color: "#111",
-    lineHeight: 70,
-    textAlign: "center",
+  compactValueText: {
+    fontSize: 42,
   },
-  daysLabel: {
+  labelText: {
     fontSize: 10,
     fontFamily: "my-font",
     color: "#333",
-    letterSpacing: 1.2,
     fontWeight: "900",
-    marginTop: 4,
     textTransform: "uppercase",
     textAlign: "center",
   },
@@ -305,20 +236,29 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto-Regular",
     fontWeight: "bold",
     color: "#000",
-    lineHeight: 20,
+    lineHeight: 24,
   },
   notificationIcon: {
     position: "absolute",
-    top: 5,
-    right: 35,
-    zIndex: 1,
+    top: 8,
+    right: 90,
   },
   deleteIcon: {
     position: "absolute",
-    top: 5,
-    right: 5,
-    zIndex: 1,
+    top: 8,
+    right: 8,
+    padding: 6,
+  },
+  completeIcon: {
+    position: "absolute",
+    bottom: 8,
+    right: 8,
+    padding: 6,
+  },
+  archiveIcon: {
+    position: "absolute",
+    top: 8,
+    right: 42,
+    padding: 6,
   },
 });
-
-export default memo(CounterItem);

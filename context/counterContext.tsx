@@ -1,4 +1,4 @@
-import { Counter } from "@/types/counter";
+import { Counter, Recurrence } from "@/types/counter";
 import { MyWidget } from "@/widget/CounterList";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
@@ -35,6 +35,58 @@ Notifications.setNotificationHandler({
 
 const STORAGE_KEY = "@days_since_app_data_v2";
 
+type NotificationData = {
+  counterId?: unknown;
+  notificationType?: unknown;
+};
+
+const getExactTimeCounterId = (data: NotificationData): string | null => {
+  if (
+    typeof data.counterId === "string" &&
+    data.notificationType === "exactTime"
+  ) {
+    return data.counterId;
+  }
+
+  return null;
+};
+
+// --- Helper: Calculate next recurrence date ---
+function getNextRecurrenceDate(
+  currentTargetDate: number,
+  recurrence: Recurrence,
+  customDays?: number,
+): number | null {
+  const date = new Date(currentTargetDate);
+
+  switch (recurrence) {
+    case "daily":
+      date.setDate(date.getDate() + 1);
+      break;
+    case "weekly":
+      date.setDate(date.getDate() + 7);
+      break;
+    case "monthly":
+      date.setMonth(date.getMonth() + 1);
+      break;
+    case "yearly":
+      date.setFullYear(date.getFullYear() + 1);
+      break;
+    case "custom":
+      if (customDays && customDays > 0) {
+        date.setDate(date.getDate() + customDays);
+      } else {
+        return null;
+      }
+      break;
+    case "none":
+    default:
+      return null;
+  }
+
+  return date.getTime();
+}
+
 type CounterContextType = {
   counters: Counter[];
   setCounters: Dispatch<SetStateAction<Counter[]>>;
@@ -46,7 +98,8 @@ type CounterContextType = {
       | "completed"
       | "notificationId"
       | "todayNotificationId"
-    > & { createdAt: number }
+      | "nextRecurrenceDate"
+    > & { createdAt: number },
   ) => void;
   updateCounter: (id: string, updates: Partial<Counter>) => void;
   deleteCounter: (id: string) => void;
@@ -124,58 +177,189 @@ export const CounterProvider = ({
       }
       if (finalStatus !== "granted") {
         alert(
-          "Failed to get push token for push notification! You might miss countdown alerts."
+          "Failed to get push token for push notification! You might miss countdown alerts.",
         );
       }
     })();
   }, []);
 
+  // --- Helper: Schedule notifications for a countdown counter ---
+  const scheduleCountdownNotifications = useCallback(
+    async (
+      counterName: string,
+      targetDate: number,
+      counterId: string,
+    ): Promise<{ exactId?: string; todayId?: string }> => {
+      const triggerDate = new Date(targetDate);
+      const now = new Date();
+      let exactId: string | undefined;
+      let todayId: string | undefined;
+
+      if (triggerDate.getTime() > now.getTime()) {
+        try {
+          exactId = await Notifications.scheduleNotificationAsync({
+            content: {
+              title: "Countdown Finished!",
+              body: `${counterName.substring(0, 10)}`,
+              data: { counterId, notificationType: "exactTime" },
+            },
+            trigger: {
+              type: Notifications.SchedulableTriggerInputTypes.DATE,
+              date: triggerDate,
+            },
+          });
+        } catch (error) {
+          console.error("Error scheduling exact time notification:", error);
+        }
+
+        const todayNotificationTime = new Date(triggerDate);
+        todayNotificationTime.setHours(21, 0, 0, 0);
+
+        if (
+          todayNotificationTime.getTime() > now.getTime() &&
+          todayNotificationTime.getDate() === triggerDate.getDate() &&
+          todayNotificationTime.getMonth() === triggerDate.getMonth() &&
+          todayNotificationTime.getFullYear() === triggerDate.getFullYear()
+        ) {
+          try {
+            todayId = await Notifications.scheduleNotificationAsync({
+              content: {
+                title: "Countdown Update!",
+                body: `${counterName} ends today at ${triggerDate.toLocaleTimeString(
+                  [],
+                  {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  },
+                )}!`,
+                data: { counterId, notificationType: "today" },
+                vibrate: [2, 3, 4],
+                interruptionLevel: "active",
+                sticky: true,
+              },
+              trigger: {
+                type: Notifications.SchedulableTriggerInputTypes.DATE,
+                date: todayNotificationTime,
+              },
+            });
+          } catch (error) {
+            console.error("Error scheduling 'today' notification:", error);
+          }
+        }
+      }
+
+      return { exactId, todayId };
+    },
+    [],
+  );
+
   // Function to mark a counter as completed
-  const markCounterCompleted = useCallback((counterId: string) => {
-    setCounters((prevCounters) =>
-      prevCounters.map((counter) =>
-        counter.id === counterId
-          ? { ...counter, completed: true, isArchived: true }
-          : counter
-      )
-    );
-  }, []);
+  // If recurring, auto-reschedules to the next occurrence instead of archiving
+  const markCounterCompleted = useCallback(
+    (counterId: string) => {
+      setCounters((prevCounters) => {
+        const counter = prevCounters.find((c) => c.id === counterId);
+        if (!counter) return prevCounters;
+
+        // If recurring countdown, reschedule instead of archiving
+        if (
+          counter.type === "countdown" &&
+          counter.recurrence &&
+          counter.recurrence !== "none"
+        ) {
+          const nextDate = getNextRecurrenceDate(
+            counter.createdAt,
+            counter.recurrence,
+            counter.customRecurrenceDays,
+          );
+
+          if (nextDate) {
+            // Cancel old notifications
+            if (counter.notificationId) {
+              Notifications.cancelScheduledNotificationAsync(
+                counter.notificationId,
+              ).catch(() => {});
+            }
+            if (counter.todayNotificationId) {
+              Notifications.cancelScheduledNotificationAsync(
+                counter.todayNotificationId,
+              ).catch(() => {});
+            }
+
+            // Schedule new notifications for next occurrence
+            scheduleCountdownNotifications(
+              counter.name,
+              nextDate,
+              counter.id,
+            ).then(({ exactId, todayId }) => {
+              setCounters((current) =>
+                current.map((c) =>
+                  c.id === counterId
+                    ? {
+                        ...c,
+                        notificationId: exactId,
+                        todayNotificationId: todayId,
+                      }
+                    : c,
+                ),
+              );
+            });
+
+            return prevCounters.map((c) =>
+              c.id === counterId
+                ? {
+                    ...c,
+                    createdAt: nextDate,
+                    completed: false,
+                    isArchived: false,
+                    nextRecurrenceDate: nextDate,
+                  }
+                : c,
+            );
+          }
+        }
+
+        // Default: mark as completed and archived
+        return prevCounters.map((c) =>
+          c.id === counterId ? { ...c, completed: true, isArchived: true } : c,
+        );
+      });
+    },
+    [scheduleCountdownNotifications],
+  );
 
   // Handle incoming notifications
   useEffect(() => {
     const notificationReceivedListener =
       Notifications.addNotificationReceivedListener((notification) => {
         console.log("Notification received in foreground:", notification);
-        const notificationData = notification.request.content.data;
-        if (notificationData && notificationData.counterId) {
-          // Only mark complete if it's the final 'exact time' notification
-          if (notificationData.notificationType === "exactTime") {
-            markCounterCompleted(notificationData.counterId);
-          }
+        const counterId = getExactTimeCounterId(
+          notification.request.content.data,
+        );
+        if (counterId) {
+          markCounterCompleted(counterId);
         }
       });
 
     const notificationResponseListener =
       Notifications.addNotificationResponseReceivedListener((response) => {
         console.log("Notification response received (user tapped):", response);
-        const notificationData = response.notification.request.content.data;
-        if (notificationData && notificationData.counterId) {
-          if (notificationData.notificationType === "exactTime") {
-            markCounterCompleted(notificationData.counterId);
-          }
-          // You might want to navigate to the counter's detail page here
-          // if the user taps the notification.
+        const counterId = getExactTimeCounterId(
+          response.notification.request.content.data,
+        );
+        if (counterId) {
+          markCounterCompleted(counterId);
         }
       });
 
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response && response.notification) {
         console.log("App launched from notification:", response.notification);
-        const notificationData = response.notification.request.content.data;
-        if (notificationData && notificationData.counterId) {
-          if (notificationData.notificationType === "exactTime") {
-            markCounterCompleted(notificationData.counterId);
-          }
+        const counterId = getExactTimeCounterId(
+          response.notification.request.content.data,
+        );
+        if (counterId) {
+          markCounterCompleted(counterId);
         }
       }
     });
@@ -190,7 +374,7 @@ export const CounterProvider = ({
         | "completed"
         | "notificationId"
         | "todayNotificationId"
-      > & { createdAt: number }
+      > & { createdAt: number },
     ) => {
       const id = String(Date.now());
 
@@ -218,7 +402,7 @@ export const CounterProvider = ({
                 },
               });
             console.log(
-              `Exact time notification scheduled for ${newCounterData.name} with ID: ${exactTimeNotificationId}`
+              `Exact time notification scheduled for ${newCounterData.name} with ID: ${exactTimeNotificationId}`,
             );
           } catch (error) {
             console.error("Error scheduling exact time notification:", error);
@@ -259,7 +443,7 @@ export const CounterProvider = ({
                   },
                 });
               console.log(
-                `"Today" notification scheduled for ${newCounterData.name} with ID: ${todayNotificationId}`
+                `"Today" notification scheduled for ${newCounterData.name} with ID: ${todayNotificationId}`,
               );
             } catch (error) {
               console.error("Error scheduling 'today' notification:", error);
@@ -283,7 +467,7 @@ export const CounterProvider = ({
                     title: "",
                     body: `${newCounterData.name.substring(
                       0,
-                      10
+                      10,
                     )} has been reached`,
                     data: { counterId: id, notificationType: "exactTime" },
                     interruptionLevel: "timeSensitive",
@@ -291,7 +475,7 @@ export const CounterProvider = ({
                   trigger: null, // null trigger means immediate
                 });
               console.log(
-                `Immediate notification sent for ${newCounterData.name} with ID: ${exactTimeNotificationId}`
+                `Immediate notification sent for ${newCounterData.name} with ID: ${exactTimeNotificationId}`,
               );
               markCounterCompleted(id); // Mark as completed immediately
             } catch (error) {
@@ -312,14 +496,14 @@ export const CounterProvider = ({
 
       setCounters((prevCounters) => [...prevCounters, newCounter]);
     },
-    [markCounterCompleted]
+    [markCounterCompleted],
   ); // Depend on markCounterCompleted
 
   const updateCounter = useCallback((id: string, updates: Partial<Counter>) => {
     setCounters((prevCounters) =>
       prevCounters.map((counter) =>
-        counter.id === id ? { ...counter, ...updates } : counter
-      )
+        counter.id === id ? { ...counter, ...updates } : counter,
+      ),
     );
   }, []);
 
@@ -331,10 +515,10 @@ export const CounterProvider = ({
         if (counterToDelete.notificationId) {
           try {
             await Notifications.cancelScheduledNotificationAsync(
-              counterToDelete.notificationId
+              counterToDelete.notificationId,
             );
             console.log(
-              `Cancelled notification ${counterToDelete.notificationId}`
+              `Cancelled notification ${counterToDelete.notificationId}`,
             );
           } catch (error) {
             console.error("Error cancelling notification:", error);
@@ -343,10 +527,10 @@ export const CounterProvider = ({
         if (counterToDelete.todayNotificationId) {
           try {
             await Notifications.cancelScheduledNotificationAsync(
-              counterToDelete.todayNotificationId
+              counterToDelete.todayNotificationId,
             );
             console.log(
-              `Cancelled today notification ${counterToDelete.todayNotificationId}`
+              `Cancelled today notification ${counterToDelete.todayNotificationId}`,
             );
           } catch (error) {
             console.error("Error cancelling today notification:", error);
@@ -355,10 +539,10 @@ export const CounterProvider = ({
       }
 
       setCounters((prevCounters) =>
-        prevCounters.filter((counter) => counter.id !== id)
+        prevCounters.filter((counter) => counter.id !== id),
       );
     },
-    [counters]
+    [counters],
   );
 
   const contextValue = useMemo(
@@ -377,7 +561,7 @@ export const CounterProvider = ({
       updateCounter,
       deleteCounter,
       markCounterCompleted,
-    ]
+    ],
   );
 
   // Splash screen while loading
