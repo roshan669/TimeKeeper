@@ -2,6 +2,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   BackHandler,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -231,7 +232,12 @@ export default function AddModalScreen() {
       <GestureDetector
         gesture={Gesture.Simultaneous(flingRightGesture, flingLeftGesture)}
       >
-        <View collapsable={false} style={styles.innerContentContainer}>
+        <ScrollView
+          style={styles.modalScroll}
+          contentContainerStyle={styles.innerContentContainer}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           <Text
             style={[
               styles.modalTitle,
@@ -634,7 +640,7 @@ export default function AddModalScreen() {
           >
             <Icon source={"github"} size={30} />
           </Link> */}
-        </View>
+        </ScrollView>
       </GestureDetector>
     </LinearGradient>
   );
@@ -655,12 +661,18 @@ export const styles = StyleSheet.create({
     alignItems: "center", // Center content horizontally
     paddingVertical: 20,
   },
+  modalScroll: {
+    flex: 1,
+    width: "100%",
+  },
   innerContentContainer: {
     // This is now your actual modal content, without the gradient
-    flex: 1, // Ensure it expands within the gradient
+    flexGrow: 1, // Keep short content centered while allowing overflow to scroll
     justifyContent: "center",
     width: "100%",
     alignItems: "center",
+    paddingTop: 50,
+    paddingBottom: 60,
   },
   modalTitle: {
     marginBottom: 10,
