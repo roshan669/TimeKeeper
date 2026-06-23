@@ -116,6 +116,9 @@ export default function Index() {
               completed: c.completed || false,
               notificationId: c.notificationId,
               todayNotificationId: c.todayNotificationId,
+              recurrence: c.recurrence || "none",
+              customRecurrenceDays: c.customRecurrenceDays,
+              nextRecurrenceDate: c.nextRecurrenceDate,
             }),
           );
           setCounters(correctedCounters);

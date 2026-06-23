@@ -66,8 +66,8 @@ const calculateTime = (item: Counter) => {
 
 export function MyWidget({ data, theme }: counterprops) {
   const isDark = theme === "dark";
-  const backgroundColor = isDark ? "#1b1b1bff" : "#FFFFFF";
-  const textColor = isDark ? "#FFFFFF" : "#000000";
+  const backgroundColor: `#${string}` = isDark ? "#1b1b1bff" : "#FFFFFF";
+  const textColor: `#${string}` = isDark ? "#FFFFFF" : "#000000";
 
   return (
     <FlexWidget
@@ -128,7 +128,6 @@ export function MyWidget({ data, theme }: counterprops) {
         style={{
           height: "match_parent",
           width: "match_parent",
-          paddingVertical: 8,
         }}
       >
         {data?.map((counter: Counter, i) => {
@@ -138,8 +137,8 @@ export function MyWidget({ data, theme }: counterprops) {
           // Gradient colors based on type
           const gradientColors =
             counter.type === "countdown"
-              ? { from: "#E0E0E0", to: "#4285F4" }
-              : { from: "#FEC9CE", to: "#FF96A1" };
+              ? ({ from: "#E0E0E0", to: "#4285F4" } as const)
+              : ({ from: "#FEC9CE", to: "#FF96A1" } as const);
 
           return (
             <FlexWidget

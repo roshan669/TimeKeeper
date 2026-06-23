@@ -1,4 +1,4 @@
-import { Counter } from "@/types/counter";
+import { Counter, Recurrence } from "@/types/counter";
 import { MyWidget } from "@/widget/CounterList";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
@@ -33,9 +33,23 @@ Notifications.setNotificationHandler({
   }),
 });
 
-import { Recurrence } from "@/types/counter";
-
 const STORAGE_KEY = "@days_since_app_data_v2";
+
+type NotificationData = {
+  counterId?: unknown;
+  notificationType?: unknown;
+};
+
+const getExactTimeCounterId = (data: NotificationData): string | null => {
+  if (
+    typeof data.counterId === "string" &&
+    data.notificationType === "exactTime"
+  ) {
+    return data.counterId;
+  }
+
+  return null;
+};
 
 // --- Helper: Calculate next recurrence date ---
 function getNextRecurrenceDate(
@@ -319,36 +333,33 @@ export const CounterProvider = ({
     const notificationReceivedListener =
       Notifications.addNotificationReceivedListener((notification) => {
         console.log("Notification received in foreground:", notification);
-        const notificationData = notification.request.content.data;
-        if (notificationData && notificationData.counterId) {
-          // Only mark complete if it's the final 'exact time' notification
-          if (notificationData.notificationType === "exactTime") {
-            markCounterCompleted(notificationData.counterId);
-          }
+        const counterId = getExactTimeCounterId(
+          notification.request.content.data,
+        );
+        if (counterId) {
+          markCounterCompleted(counterId);
         }
       });
 
     const notificationResponseListener =
       Notifications.addNotificationResponseReceivedListener((response) => {
         console.log("Notification response received (user tapped):", response);
-        const notificationData = response.notification.request.content.data;
-        if (notificationData && notificationData.counterId) {
-          if (notificationData.notificationType === "exactTime") {
-            markCounterCompleted(notificationData.counterId);
-          }
-          // You might want to navigate to the counter's detail page here
-          // if the user taps the notification.
+        const counterId = getExactTimeCounterId(
+          response.notification.request.content.data,
+        );
+        if (counterId) {
+          markCounterCompleted(counterId);
         }
       });
 
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response && response.notification) {
         console.log("App launched from notification:", response.notification);
-        const notificationData = response.notification.request.content.data;
-        if (notificationData && notificationData.counterId) {
-          if (notificationData.notificationType === "exactTime") {
-            markCounterCompleted(notificationData.counterId);
-          }
+        const counterId = getExactTimeCounterId(
+          response.notification.request.content.data,
+        );
+        if (counterId) {
+          markCounterCompleted(counterId);
         }
       }
     });

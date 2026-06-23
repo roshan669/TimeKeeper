@@ -106,10 +106,7 @@ const WheelPicker = React.forwardRef<ICarouselInstance, WheelPickerProps>(
     const isFirstRender = useRef(true);
 
     // Expose ref
-    React.useImperativeHandle(ref, () => ({
-      ...carouselRef.current!,
-      scrollTo: carouselRef.current?.scrollTo,
-    }));
+    React.useImperativeHandle(ref, () => carouselRef.current!);
 
     // Sync selectedIndex changes from parent (e.g. date clamping)
     useEffect(() => {
@@ -145,7 +142,7 @@ const WheelPicker = React.forwardRef<ICarouselInstance, WheelPickerProps>(
           defaultIndex={safeIndex}
           pagingEnabled
           snapEnabled
-          onScrollBegin={() => {
+          onScrollStart={() => {
             isScrolling.current = true;
           }}
           onScrollEnd={(index) => {
